@@ -1,0 +1,55 @@
+write references for skill: llm-tool-calling
+
+skills to make:
+structured-output-pydantic (like judge model)
+
+production-ai-skills/
+├── README.md                          # The pitch + index + install instructions
+├── LICENSE                            # MIT — lowest friction for adoption
+├── .github/
+│   └── workflows/
+│       └── validate-skills.yml        # CI that lints SKILL.md frontmatter
+│
+│
+├── structured-output-pydantic/
+│   ├── SKILL.md
+│   └── references/
+│       └── schema-patterns.md
+│
+├── rag-pipeline-standard/
+│   ├── SKILL.md
+│   └── references/
+│       ├── retrieval-bm25-dense-hybrid.md
+│       ├── reranking-cross-encoder.md
+│       └── vector-store-selection.md
+│
+├── agent-vs-workflow-decision/
+│   └── SKILL.md
+│
+├── evals-before-shipping/
+│   ├── SKILL.md
+│   └── references/
+│       └── eval-patterns.md
+│
+├── system-prompt-engineering/
+│   └── SKILL.md
+│
+├── streaming-and-cancellation/
+│   └── SKILL.md
+│
+├── llm-retry-and-fallback/
+│   └── SKILL.md
+│
+├── observability-for-llm-apps/
+│   └── SKILL.md
+│
+├── when-to-fine-tune/
+│   └── SKILL.md
+│
+└── examples/                          # Killer demo content
+    ├── README.md                      # "Same task, with/without skills"
+    ├── without-skills/
+    │   └── transcript.md              # Copilot writing LangChain spaghetti
+    └── with-skills/
+        └── transcript.md              # Same task, clean direct code
+
