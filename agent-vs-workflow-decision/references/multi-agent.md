@@ -1,5 +1,7 @@
 # Multi-Agent: Structure, Test, and Cost Controls
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Multi-agent is not "an agent, but better." It is a specific architecture for a specific shape of problem, and it is the most expensive rung on the ladder. This file is the decision, the structure, and the controls — for the subagent mechanics themselves, see `subagents-and-multi-agent`.
 
 ## The independence test

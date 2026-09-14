@@ -5,6 +5,10 @@ description: Use this skill whenever you are designing, naming, or refactoring t
 
 # Tool Design for Agents
 
+> **Provider-neutral.** The practice here applies to any LLM provider. Code samples name one provider's syntax to stay concrete; equivalents exist elsewhere under different names, and genuinely provider-specific features are labelled where they appear.
+>
+> **Verify before you build.** Endpoint shapes, parameter names, limits, and model support all move. Search the provider's current API reference before relying on any of them. If something here is stale, make the *smallest* edit that corrects it — replace the outdated token, leave the surrounding argument intact.
+
 ## Core principle
 
 A tool is a contract between a deterministic system and a non-deterministic agent. Design it for the agent, not for a developer. The tools that work best are the ones where the right call is obvious from the name and schema alone.
@@ -17,6 +21,8 @@ Three failure modes, each with a different fix. Diagnose before you reach for a 
 | Agent picks the right tool, wrong arguments | `input_examples`, or decomposition |
 | Tool definitions eat the context window | `defer_loading` + tool search |
 | Intermediate results eat the context window | `allowed_callers` + programmatic calling |
+
+The field names in that table (`input_examples`, `defer_loading`, `allowed_callers`) are the Anthropic API's spelling. Other providers expose some of these under different names and some not at all — the *diagnosis* column is portable, the spelling is not. Check your provider's current tool reference for the equivalent before reaching for one.
 
 **These are remedies, not defaults.** Every one of them costs something — tool count, tokens, latency, or complexity. Write the natural tool first, measure it against a tool-call eval suite, and apply a fix only where the measurement shows a failure. See the measurement loop below; it is the part of this skill that makes the rest safe to use.
 
@@ -162,7 +168,7 @@ Response structure (JSON vs XML vs Markdown) also measurably affects performance
 
 ## Budget tool response size
 
-Implement pagination, range selection, filtering, and truncation with sensible defaults. Claude Code caps tool responses at 25,000 tokens by default.
+Implement pagination, range selection, filtering, and truncation with sensible defaults. For a reference point, Claude Code caps tool responses at 25,000 tokens by default; pick your own cap deliberately rather than inheriting whatever your harness does.
 
 When you truncate or error, **steer the agent in the response text**. An error should say what to do differently, not emit a traceback:
 
@@ -184,6 +190,8 @@ Same for truncation: tell the agent to make several narrow searches rather than 
 
 ## Tool use examples: fix wrong arguments
 
+*`input_examples` is an Anthropic API field. Where a provider has no equivalent, the same information goes in the parameter descriptions — more verbosely, and charged the same way.*
+
 When the agent picks the right tool but malformed arguments, JSON Schema has run out of expressive power. Schema defines what is *structurally valid*; it cannot express conventions — date format, ID shape, which optional parameters co-occur.
 
 Add `input_examples` to the tool definition:
@@ -203,7 +211,7 @@ Add `input_examples` to the tool definition:
                 "name": "Jane Smith",
                 "contact": {"email": "jane@acme.com", "phone": "+1-555-0123"},
             },
-            "due_date": "2024-11-06",
+            "due_date": "2026-11-06",
             "escalation": {"level": 2, "notify_manager": True, "sla_hours": 4},
         },
         # partial
@@ -227,6 +235,8 @@ Anthropic reports this took accuracy from 72% to 90% on complex parameter handli
 This is an alternative to name-decomposition for the wrong-argument problem. Decomposition is better when the ambiguity is semantic (polarity, scope); examples are better when it's conventional (formats, co-occurrence).
 
 ## Tool search: fix context bloat from definitions
+
+*`defer_loading` plus a server-side search tool is an Anthropic API feature. The portable version of this idea is filtering the tool array per request in your own code — cheaper to build, and it works anywhere; see `llm-tool-calling/references/many-tools.md`.*
 
 Tool definitions are charged on every request before any work happens. Five MCP servers can run 55K tokens; Anthropic measured 134K before optimizing.
 
@@ -271,6 +281,8 @@ Two things that make it work:
 Deferred tools don't break prompt caching — they're excluded from the initial prompt entirely, so the cacheable prefix stays stable.
 
 ## Programmatic tool calling: fix context bloat from results
+
+*`allowed_callers` plus a code-execution tool is an Anthropic API feature. Providers offering a code interpreter with callable user tools support the same pattern under other names; without one, the portable substitute is doing the aggregation in your own tool implementation and returning only the result.*
 
 Different problem, different fix. Here the definitions are fine but *results* flood context, and each call costs a full inference pass.
 
@@ -360,7 +372,7 @@ Small description changes produce large effects — Claude Sonnet 3.5's SWE-benc
 
 **Adding all three features at once.** Start with your actual bottleneck — wrong tool → naming, wrong arguments → examples, definition bloat → tool search, result bloat → programmatic calling. Layer only after measuring.
 
-**Assuming a feature is available on your model.** Tool search, programmatic tool calling, and `input_examples` are generally available with no beta header, but each has a model floor — tool search and programmatic calling need Opus 4.5 / Sonnet 4.5 or later, and tool search is unsupported on Opus 4.1 and earlier. Version strings are date-stamped and move (`code_execution_20260120` superseded `code_execution_20250825`). Check the provider's current tool reference before pinning one.
+**Assuming a feature is available on your provider and model.** Tool search, programmatic tool calling, and `input_examples` are Anthropic API features, generally available with no beta header, but each supports an explicit list of models rather than "version X and later" — and recent models have been absent from those lists. Version strings are date-stamped and move (`code_execution_20260120` superseded `code_execution_20250825`). Search the provider's current tool reference before pinning one, and treat the absence of an equivalent elsewhere as the normal case rather than a surprise.
 
 ## References
 

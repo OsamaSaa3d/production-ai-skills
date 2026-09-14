@@ -1,5 +1,7 @@
 # Wiring the Ladder Into the Eval Harness
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Phase 1 established a reference implementation passing at a known rate on the strongest model. Phase 2 walks down the cost ladder, comparing each candidate against the **target** rather than against a guess. This is that walk, as code, including the case nobody plans for: no candidate passes.
 
 ## The ladder
@@ -86,7 +88,7 @@ def descend_with_fixes(ladder, suite, *, target, reference, tools):
 
 Two properties worth noticing:
 
-**The fixes are driven by `result.failures`**, not applied blindly. Many invalid-parameter errors means descriptions or examples; a specific confusion between two tools means decomposition. `tool-design`'s `references/eval-loop.md` has the diagnostic table.
+**The fixes are driven by `result.failures`**, not applied blindly. Many invalid-parameter errors means descriptions or examples; a specific confusion between two tools means decomposition. `tool-design/references/eval-loop.md` has the diagnostic table.
 
 **The improved `tools` propagate.** These fixes remove ambiguity that was costing you on the large model too — you are not trading quality for cost, and if you end up back on the reference model you still keep a better interface.
 

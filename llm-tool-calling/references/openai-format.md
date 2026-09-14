@@ -1,5 +1,7 @@
 # OpenAI-Compatible Tool Calling: Exact Payload Shapes
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 This is the wire format. Every OpenAI-compatible endpoint — Azure OpenAI, vLLM, Together, Groq, Ollama, OpenRouter — accepts some subset of it. The subset is the thing that bites you; see "Compatibility is a claim, not a guarantee" at the end.
 
 ## Chat Completions request

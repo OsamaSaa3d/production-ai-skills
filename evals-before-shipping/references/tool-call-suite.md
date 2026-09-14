@@ -80,7 +80,7 @@ ARGUMENTS = ToolCorrectnessMetric(
 ARGS_JUDGED = ArgumentCorrectnessMetric(threshold=0.8)   # referenceless, LLM-based
 ```
 
-A name-only assertion reports 100% on an agent that picks the right tool and sets a polarity flag backwards — a call that is structurally valid, raises no error, and returns confidently wrong results. `tool-design`'s `references/naming-experiments.md` walks through exactly that case.
+A name-only assertion reports 100% on an agent that picks the right tool and sets a polarity flag backwards — a call that is structurally valid, raises no error, and returns confidently wrong results. `tool-design/references/naming-experiments.md` walks through exactly that case.
 
 Use `ToolCorrectnessMetric` with `INPUT_PARAMETERS` where you know the expected arguments; `ArgumentCorrectnessMetric` where the values can't be predetermined (a generated summary, a timestamp, a free-text query).
 

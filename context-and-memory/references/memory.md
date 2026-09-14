@@ -1,5 +1,7 @@
 # Agent Memory
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 ## The four types
 
 The CoALA taxonomy, now the field default. Naming them prevents the standard mistake: building one store and calling it "memory."

@@ -1,5 +1,7 @@
 # The Include/Exclude Experiment, and How to A/B a Tool Design
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Every rule in the tool-design skill is a default, not a law. The effects are model-dependent and task-dependent — Anthropic's own guidance on prefix vs suffix namespacing is explicitly "run your own eval." This file is the experiment that produced the decomposition rule, written out so you can run the same shape on your own tools.
 
 ## The experiment
@@ -166,7 +168,7 @@ tools/EXPERIMENTS.md
 
 ## 2026-03-14 — filter_records polarity
 Hypothesis: mode flag set wrong intermittently
-Model: claude-opus-5 | Tasks: 40 (20 include / 20 exclude) | Held out: 12
+Model: <pinned model id> | Tasks: 40 (20 include / 20 exclude) | Held out: 12
 Before: tool selection 40/40, mode correct 33/40
 After (split into two named tools): 40/40 correct
 Cost: +1 tool. Kept.

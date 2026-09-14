@@ -1,8 +1,10 @@
 # Cache-Safe Prompt Assembly
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 ## The mechanic
 
-Prompt caching is a **prefix match on exact bytes**. The cache key is derived from the rendered prompt up to each breakpoint. One changed byte at position N invalidates every breakpoint at or after N.
+Prompt caching is a **prefix match on exact bytes**. The cache key is derived from the rendered prompt up to each breakpoint. One changed byte at position N invalidates every breakpoint at or after N. That much holds at every provider offering caching; the render order and whether breakpoints are explicit or automatic do not, so check yours.
 
 On the Claude API the render order is:
 

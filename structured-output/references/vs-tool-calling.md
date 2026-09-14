@@ -1,5 +1,7 @@
 # Structured Output vs Tool Calling: The Same Task, Both Ways
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Both put a JSON Schema in the request and constrain generation against it. The mechanism is nearly identical. What differs is **where the data comes back and what it means** — and that determines which one your code should use.
 
 | | Tool calling | Structured output |
@@ -94,7 +96,7 @@ class TriageResult(BaseModel):
     follow_up_required: bool
 
 response = client.messages.create(
-    model="claude-opus-5",
+    model=MODEL,
     max_tokens=4096,
     tools=[issue_refund_tool, lookup_order_tool],          # strict: True on each
     output_config={"format": {"type": "json_schema", "schema": TriageResult.model_json_schema()}},

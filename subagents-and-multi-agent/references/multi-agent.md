@@ -2,7 +2,7 @@
 
 Separate coordinating agents are independent instances across sessions, each with its own context, able to message each other. This is the narrowest case in the skill and the most expensive. Everything below assumes you have already cleared the gate.
 
-For the architecture-selection argument and the cost model, see `agent-vs-workflow-decision`'s `references/multi-agent.md`. This file is about what changes once agents are actually separate: handoffs, and the failure modes that only exist here.
+For the architecture-selection argument and the cost model, see `agent-vs-workflow-decision/references/multi-agent.md`. This file is about what changes once agents are actually separate: handoffs, and the failure modes that only exist here.
 
 ## The gate, restated
 
@@ -96,7 +96,7 @@ Messages from another agent are not a trusted channel. If any agent in the syste
 - Validate every inbound handoff against the schema before acting on it.
 - Keep irreversible actions behind the same gates as anywhere else: a peer agent asking for one is not authorization.
 
-See `system-prompt-engineering`'s `references/prompt-injection.md`.
+See `system-prompt-engineering/references/prompt-injection.md`.
 
 ## Scale changes the shape
 

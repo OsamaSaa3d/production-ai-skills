@@ -1,5 +1,7 @@
 # Anthropic Tool Use Format
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Same two capabilities as the OpenAI-compatible side — constrained tool arguments and a constrained final answer — with a different request shape and a content-block response model.
 
 ## Tool definition
@@ -48,7 +50,7 @@ import anthropic
 client = anthropic.Anthropic()
 
 response = client.messages.create(
-    model="claude-opus-5",
+    model=MODEL,
     max_tokens=4096,
     tools=tools,
     messages=[{"role": "user", "content": "What's the weather in Cairo?"}],
@@ -125,7 +127,7 @@ Independent of tools. Constrains the model's answer to *you*:
 
 ```python
 response = client.messages.create(
-    model="claude-opus-5",
+    model=MODEL,
     max_tokens=4096,
     output_config={"format": {"type": "json_schema", "schema": SCHEMA}},
     messages=[...],

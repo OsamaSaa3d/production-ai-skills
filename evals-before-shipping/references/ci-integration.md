@@ -1,5 +1,7 @@
 # Running the Suite in CI
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 An eval suite that runs only when someone remembers is not a test. This is how to make it a gate — without a bill nobody approved and without flaky failures that train the team to ignore red.
 
 ## The workflow
@@ -22,8 +24,9 @@ jobs:
 
       - name: Regression suite
         env:
-          OPENAI_API_KEY: ${{ secrets.EVAL_JUDGE_KEY }}   # the judge, not your app's key
-          APP_MODEL_KEY:  ${{ secrets.APP_MODEL_KEY }}
+          # whichever env var your configured judge provider reads
+          JUDGE_API_KEY: ${{ secrets.EVAL_JUDGE_KEY }}   # the judge, not your app's key
+          APP_MODEL_KEY: ${{ secrets.APP_MODEL_KEY }}
         run: deepeval test run tests/evals/test_regression.py -c
 
       - if: always()
@@ -142,7 +145,7 @@ A suite is only valid against the model it was measured on.
 
 ```python
 CONFIG = {
-    "app_model": "claude-opus-5",        # pinned, not an alias
+    "app_model": APP_MODEL_ID,           # a specific pinned ID, never a moving alias
     "judge_model": "...",
     "suite_version": "regression@2026-09-14",
 }

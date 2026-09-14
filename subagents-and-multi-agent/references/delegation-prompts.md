@@ -143,7 +143,7 @@ The practical consequence: **a subagent's output is not a trusted channel into t
 - Validate structured returns against a schema before acting on them.
 - Keep the decision to act in the parent, where the full context lives.
 
-See `system-prompt-engineering`'s `references/prompt-injection.md` for the general shape of this.
+See `system-prompt-engineering/references/prompt-injection.md` for the general shape of this.
 
 ## A template
 

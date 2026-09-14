@@ -5,6 +5,10 @@ description: Use this skill whenever you are writing tests for an LLM applicatio
 
 # Eval Suites for LLM Apps
 
+> **Provider-neutral.** The practice here applies to any LLM provider. Code samples name one provider's syntax to stay concrete; equivalents exist elsewhere under different names, and genuinely provider-specific features are labelled where they appear.
+>
+> **Verify before you build.** Endpoint shapes, parameter names, limits, and model support all move. Search the provider's current API reference before relying on any of them. If something here is stale, make the *smallest* edit that corrects it — replace the outdated token, leave the surrounding argument intact.
+
 ## Core principle
 
 An LLM app without an eval suite has no tests. Build the suite with `deepeval`, run it under pytest, gate CI on it.
@@ -19,10 +23,10 @@ Two rules that govern everything below:
 
 ```bash
 pip install deepeval
-export OPENAI_API_KEY=...   # the judge model, not your app's model
+deepeval set-anthropic ...   # or set-gemini / set-ollama / set-azure-openai / set-openrouter
 ```
 
-Judge model is configurable — `deepeval set-gemini`, `deepeval set-ollama --model=...`, `deepeval set-azure-openai ...`, or pass `model=` per metric. Anthropic, LiteLLM, and custom `DeepEvalBaseLLM` subclasses all work.
+**The judge is a separate choice from your app's model, and it is not tied to any one vendor.** Pick it explicitly: `deepeval set-anthropic`, `set-gemini`, `set-ollama --model=...`, `set-azure-openai`, `set-openrouter`, LiteLLM, or a custom `DeepEvalBaseLLM` subclass; `model=` per metric overrides the global choice. Configured with none of these, DeepEval falls back to OpenAI and reads `OPENAI_API_KEY` — which is a default, not a requirement. Keep the judge's credentials separate from your app's so judge spend is its own line item.
 
 All metrics score 0-1, **higher is better**, and pass when `score >= threshold` (default `0.5`). Every metric returns `.score`, `.reason`, and `.is_successful()`.
 

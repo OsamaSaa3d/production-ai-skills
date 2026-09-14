@@ -2,7 +2,7 @@
 
 Per-token price is the number vendors publish and the wrong number to compare on. This file is the arithmetic that replaces it.
 
-For estimating cost by *architecture* before you build, see `agent-vs-workflow-decision`'s `references/cost-modeling.md`. This one is per-model accounting once a system exists.
+For estimating cost by *architecture* before you build, see `agent-vs-workflow-decision/references/cost-modeling.md`. This one is per-model accounting once a system exists.
 
 ## Why per-token price misleads
 

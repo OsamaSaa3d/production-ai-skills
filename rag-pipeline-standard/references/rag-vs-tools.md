@@ -1,5 +1,7 @@
 # RAG vs Tools vs Direct Context
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 ## The key distinction
 
 Not every "the model needs our data" problem is RAG. Get this wrong and everything downstream is wasted work.

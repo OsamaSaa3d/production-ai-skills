@@ -1,5 +1,7 @@
 # The Multi-Turn Tool Loop
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 The single-turn example in the skill is the loop with `max_iterations=1`. This is the general form. It is about forty lines, and no framework does anything meaningfully different.
 
 This file covers the *mechanics*. For whether you should be running a loop at all rather than a fixed pipeline, see `agent-vs-workflow-decision`.

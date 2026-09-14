@@ -1,5 +1,7 @@
 # Hand-Written JSON Schema
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Pydantic and Zod are the default because the typed object is the deliverable. Write the schema by hand when the shape is dynamic (built from a config or a database table), when you are in a language without a helper, when you need a JSON Schema feature the model generator won't emit, or when you are debugging and need to see exactly what shipped.
 
 ## OpenAI Chat Completions
@@ -61,7 +63,7 @@ Incomplete responses surface as `status: "incomplete"` with `incomplete_details.
 
 ```python
 response = client.messages.create(
-    model="claude-opus-5",
+    model=MODEL,
     max_tokens=4096,
     output_config={"format": {"type": "json_schema", "schema": schema}},
     messages=[...],

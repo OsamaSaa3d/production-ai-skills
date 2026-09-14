@@ -1,10 +1,12 @@
 # Cost Control for Subagents
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Claude decides on its own when to spawn subagents and how many. Subagents can spawn subagents. One prompt can become a tree, and more capable models delegate more readily — so these limits matter *more* as you move up the model tier, not less.
 
 ## The three caps
 
-Set all three before running anything unattended.
+Set all three before running anything unattended. The names below are the Claude Agent SDK's; if your harness spells them differently, set its equivalents, and if it has no budget cap at all, accumulate cost per response in your own loop and stop there — it is the only one of the three that is a hard stop.
 
 ```python
 async for message in query(

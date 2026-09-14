@@ -5,6 +5,10 @@ description: Use this skill when writing, debugging, or refactoring a system pro
 
 # System Prompt Engineering
 
+> **Provider-neutral.** The practice here applies to any LLM provider. Code samples name one provider's syntax to stay concrete; equivalents exist elsewhere under different names, and genuinely provider-specific features are labelled where they appear.
+>
+> **Verify before you build.** Endpoint shapes, parameter names, limits, and model support all move. Search the provider's current API reference before relying on any of them. If something here is stale, make the *smallest* edit that corrects it — replace the outdated token, leave the surrounding argument intact.
+
 ## Core principle
 
 The system prompt is the only part of the context you fully control, and it is charged on every single request.
@@ -191,7 +195,7 @@ Then the golden rule: show the prompt to a colleague with no context and ask the
 
 ## Assemble the prompt cache-safely
 
-This is where a well-written prompt loses money. On the Claude API the prompt renders as **`tools` → `system` → `messages`**, and caching is a **prefix match on exact bytes** — one changed byte at position N invalidates every breakpoint at or after N.
+This is where a well-written prompt loses money. Prompt caching is a **prefix match on exact bytes** at every provider that offers it; what differs is the render order and whether breakpoints are explicit. On the Claude API the prompt renders as **`tools` → `system` → `messages`** — confirm your provider's order before placing anything, because the rule below is derived from it — one changed byte at position N invalidates every breakpoint at or after N.
 
 Everything follows from that. **Keep the system prompt frozen**: no `current date: …`, no `user: …`, no retrieved documents. Those sit at the front of the prefix and invalidate everything downstream on every request; volatile facts ride in `messages` inside a `<context>` envelope. **Put the breakpoint on the last block identical across requests**, not at the end of the request — a breakpoint after volatile content never hits and you paid the write premium anyway. **Order by volatility, not by topic.** And **log `cache_read_input_tokens` from day one**: a hit rate that drops to zero after a serialization change is invisible until the invoice.
 

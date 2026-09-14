@@ -5,6 +5,10 @@ description: Use this skill when a conversation or agent loop outgrows its conte
 
 # Context and Memory
 
+> **Provider-neutral.** The practice here applies to any LLM provider. Code samples name one provider's syntax to stay concrete; equivalents exist elsewhere under different names, and genuinely provider-specific features are labelled where they appear.
+>
+> **Verify before you build.** Endpoint shapes, parameter names, limits, and model support all move. Search the provider's current API reference before relying on any of them. If something here is stale, make the *smallest* edit that corrects it — replace the outdated token, leave the surrounding argument intact.
+
 ## Core principle
 
 The context window is working memory: fast, complete, and gone at the end of the task. Everything else is a decision about what survives that boundary and in what form.
@@ -48,7 +52,7 @@ Most teams need far less than they build. **Start by asking which type the obser
 | **3. Fresh window** | Everything | Startup cost re-establishing state | State is recoverable from the filesystem or git |
 | **4. Subagents** | Nothing from the parent — the work never enters it | Tokens, coordination failure modes | Exploration whose intermediate steps don't matter |
 
-**1. Tool-result clearing is the right first move.** Once a tool result has been processed, the raw payload rarely needs to stay. On the Claude API this is a server-side context edit (`clear_tool_uses_20250919`) taking a `trigger` threshold, a `keep` count of recent tool uses, and `clear_at_least` to guarantee each clear removes enough tokens to be worth the cache invalidation it causes. The sibling strategy for thinking blocks inverts the cache tradeoff — keeping them preserves the cache, clearing them invalidates it.
+**1. Tool-result clearing is the right first move.** Once a tool result has been processed, the raw payload rarely needs to stay. Any provider lets you do this client-side by rewriting the message list before you send it; on the Claude API it is also available as a server-side context edit (`clear_tool_uses_20250919`) taking a `trigger` threshold, a `keep` count of recent tool uses, and `clear_at_least` to guarantee each clear removes enough tokens to be worth the cache invalidation it causes. The sibling strategy for thinking blocks inverts the cache tradeoff — keeping them preserves the cache, clearing them invalidates it.
 
 **2. Compaction** passes the history back to the model to compress, preserving architectural decisions, unresolved bugs, and implementation details while discarding redundant tool output, then continues with that summary plus the most recently touched files. The whole difficulty is what to drop, so **tune the compaction prompt on real agent traces — maximize recall first, then trim for precision.** Doing it in the other order produces a prompt that reads well and silently drops the constraint that mattered.
 
@@ -131,7 +135,7 @@ File format, the user-preference case, contradiction handling, and review cadenc
 
 ## If you use a hosted memory tool
 
-Anthropic's memory tool is client-side: the model requests file operations under `/memories`, and **your handler executes them against storage you control.** Two consequences.
+Some providers ship a memory tool; where yours does not, the same design holds with your own file-operation tool, and the security section below applies unchanged. Anthropic's memory tool is client-side: the model requests file operations under `/memories`, and **your handler executes them against storage you control.** Two consequences.
 
 The API already injects a memory protocol into the system prompt when the tool is present, so writing your own copy means maintaining a duplicate of a string you don't own. What is worth steering in your own prompt is *scope* ("only record information relevant to X"), not mechanism.
 

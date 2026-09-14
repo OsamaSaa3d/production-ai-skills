@@ -1,5 +1,7 @@
 # The Agent-Computer Interface Checklist
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 If you build an agent, the tools *are* the product. Anthropic reports spending more time optimizing the tools than the overall prompt on their SWE-bench agent — the interface between model and environment deserves as much prompt-engineering attention as the system prompt, and usually gets none.
 
 This is the checklist with before/after examples. The full treatment — decomposition, `input_examples`, tool search, programmatic calling, and the measurement loop — is the `tool-design` skill.

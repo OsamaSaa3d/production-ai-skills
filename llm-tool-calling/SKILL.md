@@ -5,6 +5,10 @@ description: Use this skill whenever you are writing code that calls an LLM and 
 
 # LLM Tool Calling Without Frameworks
 
+> **Provider-neutral.** The practice here applies to any LLM provider. Code samples name one provider's syntax to stay concrete; equivalents exist elsewhere under different names, and genuinely provider-specific features are labelled where they appear.
+>
+> **Verify before you build.** Endpoint shapes, parameter names, limits, and model support all move. Search the provider's current API reference before relying on any of them. If something here is stale, make the *smallest* edit that corrects it — replace the outdated token, leave the surrounding argument intact.
+
 ## Core principle
 
 When an LLM needs to invoke a function, pass the tool definitions in the API request payload and turn on strict mode. The provider then constrains the model's output during generation: it cannot return a tool name that wasn't in the payload, cannot omit a required parameter, and cannot produce malformed JSON for the arguments. This is enforcement at the inference layer, and it is the reason you do not need a framework to make tool calling reliable.
@@ -34,6 +38,7 @@ Apply this skill whenever you encounter any of:
 import json
 from openai import OpenAI
 
+MODEL = "..."   # a pinned, explicit model id — see `model-selection`
 client = OpenAI(base_url="...", api_key="...")
 
 tools = [
@@ -71,7 +76,7 @@ TOOL_REGISTRY = {
 messages = [{"role": "user", "content": "What's the weather in Cairo?"}]
 
 response = client.chat.completions.create(
-    model="gpt-4o",
+    model=MODEL,
     messages=messages,
     tools=tools,
     tool_choice="auto",  # let the model decide; "required" forces a tool call
@@ -96,7 +101,7 @@ if message.tool_calls:
         })
 
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model=MODEL,
         messages=messages,
         tools=tools,
     )

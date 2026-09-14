@@ -1,6 +1,8 @@
 # A Starter Subagent Roster
 
-Four subagents cover most of what teams actually need. Each is defined by the same four decisions: what it does, what it may touch, what it returns, and which model it runs on.
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
+Four subagents cover most of what teams actually need. The definitions are written against the Claude Agent SDK; the four decisions they encode — what it does, what it may touch, what it returns, which model it runs on — are what ports to any harness. Each is defined by the same four decisions: what it does, what it may touch, what it returns, and which model it runs on.
 
 Every one of these is high-compression — much input, little output — which is the property that makes a subagent worth its instance cost. A subagent that reads one file and returns its contents is pure overhead.
 

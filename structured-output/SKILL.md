@@ -5,6 +5,10 @@ description: Use this skill whenever you are writing code that needs an LLM's re
 
 # Structured Output
 
+> **Provider-neutral.** The practice here applies to any LLM provider. Code samples name one provider's syntax to stay concrete; equivalents exist elsewhere under different names, and genuinely provider-specific features are labelled where they appear.
+>
+> **Verify before you build.** Endpoint shapes, parameter names, limits, and model support all move. Search the provider's current API reference before relying on any of them. If something here is stale, make the *smallest* edit that corrects it — replace the outdated token, leave the surrounding argument intact.
+
 ## Core principle
 
 When you need the model's answer as structured data, pass a JSON Schema in the request and turn on strict mode. The provider constrains generation so the response conforms to your schema. You parse it directly — no fence-stripping, no regex, no retry loop.

@@ -1,5 +1,7 @@
 # Programmatic Tool Calling
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Fixes **context bloat from tool results** — a different problem from definition bloat, with a different fix. Here the definitions are fine; the *results* flood context, and every call costs a full inference pass.
 
 Claude writes code in a sandbox that orchestrates your tools. Only the script's final output enters context.
@@ -10,7 +12,7 @@ Claude writes code in a sandbox that orchestrates your tools. Only the script's 
 
 ```python
 response = client.messages.create(
-    model="claude-opus-5",
+    model=MODEL,
     max_tokens=4096,
     tools=[
         {"type": "code_execution_20260120", "name": "code_execution"},

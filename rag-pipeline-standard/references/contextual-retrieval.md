@@ -1,5 +1,7 @@
 # Contextual Retrieval and Indexing
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 ## Why contextualize
 
 Chunking destroys context — a major source of retrieval failure.
@@ -25,22 +27,15 @@ can be retrieved on its own. Name the entities, dates, and section it refers to.
 Answer with the note only."""
 
 def contextualize(document: str, chunk: str) -> str:
-    resp = client.messages.create(
+    # one short completion per chunk, on a cheap model — any provider
+    return complete(
         model=CHEAP_MODEL,
         max_tokens=150,
-        messages=[{
-            "role": "user",
-            "content": [{
-                "type": "text",
-                "text": CONTEXTUALIZE_PROMPT.format(
-                    document=document,
-                    chunk=chunk,
-                ),
-            }],
-        }],
+        prompt=CONTEXTUALIZE_PROMPT.format(document=document, chunk=chunk),
     )
-    return resp.content[0].text
 ```
+
+`complete()` is whatever thin wrapper your codebase already has over its provider's completion call. The only requirements are a short output cap and a cheap model.
 
 Then index:
 
