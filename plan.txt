@@ -10,18 +10,10 @@ production-ai-skills/
 │   └── workflows/
 │       └── validate-skills.yml        # CI that lints SKILL.md frontmatter
 │
-│
 ├── structured-output-pydantic/
 │   ├── SKILL.md
 │   └── references/
 │       └── schema-patterns.md
-│
-├── rag-pipeline-standard/
-│   ├── SKILL.md
-│   └── references/
-│       ├── retrieval-bm25-dense-hybrid.md
-│       ├── reranking-cross-encoder.md
-│       └── vector-store-selection.md
 │
 ├── agent-vs-workflow-decision/
 │   └── SKILL.md
@@ -30,12 +22,23 @@ production-ai-skills/
 │   ├── SKILL.md
 │   └── references/
 │       └── eval-patterns.md
+|
+|
+├── rag-pipeline-standard/
+│   ├── SKILL.md
+│   └── references/
+│       ├── retrieval-bm25-dense-hybrid.md
+│       ├── reranking-cross-encoder.md
+│       └── vector-store-selection.md
 │
+│
+
+
+
 ├── system-prompt-engineering/
 │   └── SKILL.md
-│
-├── streaming-and-cancellation/
-│   └── SKILL.md
+|-- memory and all sorts of memories episodic and stuff and learning rules and creating your own .md file for learning user behavior
+|-- context management and sliding window and shit.
 │
 ├── llm-retry-and-fallback/
 │   └── SKILL.md
@@ -43,8 +46,6 @@ production-ai-skills/
 ├── observability-for-llm-apps/
 │   └── SKILL.md
 │
-├── when-to-fine-tune/
-│   └── SKILL.md
 │
 └── examples/                          # Killer demo content
     ├── README.md                      # "Same task, with/without skills"
