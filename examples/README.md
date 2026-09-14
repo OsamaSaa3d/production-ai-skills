@@ -9,20 +9,28 @@ built so a skeptic can run it and get our numbers.
 
 ## Method
 
-Two arms, same model (`claude-sonnet-5`), same temperature, same `max_tokens`.
+Two arms, both **Claude Code sessions**, same model, same tools, same permissions.
+Two empty scratch directories created by `setup_arms.py`:
 
-- **Arm A** — task prompt + a neutral system prompt: *"You are a senior engineer. Write production-quality Python…"*
-- **Arm B** — identical, plus the relevant `SKILL.md` appended.
+- **Arm A** — an empty directory. Gets the task, nothing else.
+- **Arm B** — an empty directory with all **ten** skills installed under `.claude/skills/`.
 
-Arm A is not a strawman. It gets the same "production code" framing and the same
-effort. Weakening the control would make the whole exercise worthless.
+Arm A is not a strawman: it is the same agent doing the same task, and the only
+difference between the arms is whether the skills are on disk.
 
-`n = 5` per task per arm, fixed before running. 16 tasks → 80 generations per arm.
+Arm B gets all ten skills, not the relevant one. The agent picks from ten
+descriptions exactly as a real user's would, which makes **triggering part of what
+is measured** rather than something we hand it for free. Runs where no skill fired
+are reported separately — such a run measures the *description*, not the content.
 
-This tests whether the skill *content* changes behaviour. It deliberately does **not**
-test triggering — whether a skill's `description` fires on the right task is a
-separate property, measured separately (see *Triggering* below), because conflating
-them lets a win in one hide a loss in the other.
+Testing through Claude Code rather than raw API calls is deliberate. It is the
+condition the skills actually ship into, and it is the only way to exercise the two
+mechanisms that matter most: description-based triggering, and progressive
+disclosure of the 58 reference files. Pasting a `SKILL.md` into a system prompt
+would test neither.
+
+`n` is fixed before running. Prefer n=5 on the traps and controls, where the effects
+should be largest.
 
 ## The task set
 
@@ -66,9 +74,9 @@ quality, scope discipline). One dimension per criterion. Calibrate against 30 ha
 labels and require ≥80% agreement before it gates anything. Not judged by the model
 under test: self-preference would bias exactly the comparison being made.
 
-**Tier 3 — cost.** Arm B carries roughly **57x** arm A's input tokens. That is a real
-cost of using skills and goes in the headline table next to the quality delta. The
-number that decides is cost per *passing* run, per `model-selection`.
+**Tier 3 — effort and cost.** Skills add context, and an agent that loads one may also
+take more turns. `report.py` prints mean turns and tool calls per arm, because if arm B
+simply did more work, the gain may not be the skill.
 
 ## The five commitments
 
@@ -109,39 +117,40 @@ Run it yourself — no API key needed:
 python3 examples/validate_graders.py
 ```
 
-## Cost
-
-Measured from real system-prompt sizes, not guessed:
-
-| | Input tokens | Output tokens | Cost |
-|---|---|---|---|
-| Arm A (80 gens) | 6,958 | 120,000 | $1.21 |
-| Arm B (80 gens) | 399,866 | 152,000 | $2.32 |
-| Judge (optional) | — | — | ~$1.50 |
-| **Total** | | | **~$5** |
-
 ## Running it
 
-```bash
-export ANTHROPIC_API_KEY=...
-./examples/reproduce.sh          # N=5 by default
-```
-
-Or step by step:
+No API key and no separate spend: the generations come from Claude Code sessions.
+`examples/PROMPT.md` is the full brief for an orchestrating session.
 
 ```bash
-python3 examples/run.py --arm a --n 5 --dry-run   # plan only, no API calls
-python3 examples/run.py --arm a --n 5
-python3 examples/run.py --arm b --n 5
-python3 examples/grade.py                          # blind, writes results.tsv
+python3 examples/setup_arms.py --force      # two clean scratch dirs, skills in B only
+# ... drive one Claude Code session per task per arm, in its arm directory ...
+python3 examples/record.py --arm b --task t09 --run 0 --answer-file out.md \
+        --skill-triggered tool-design --turns 4
+python3 examples/check_contamination.py     # arm A must never have seen a skill
+python3 examples/grade.py                   # blind, writes results.tsv
+python3 examples/report.py                  # writes RESULTS.md
 ```
 
-## Triggering (separate experiment, not yet built)
+### The control that everything rests on
 
-Give a model only the 10 skill *descriptions*, plus the 16 task prompts and 10
-unrelated ones ("refactor this CSS", "why is my Docker build slow"), and ask which
-apply. Score precision and recall per skill. This catches a failure the main eval
-cannot: a perfect skill whose description never matches is worth zero in production.
+Both arms run in empty scratch directories with **no path to this repository**. If a
+session can reach the repo, arm A can read the skills and the comparison is worthless
+— and it need not be deliberate: an agent asked to write tool-calling code, sitting in
+a repo full of tool-calling guidance, will plausibly read it.
+
+`check_contamination.py` scans every arm-A answer and transcript for skill directory
+names and distinctive skill phrasing, and exits non-zero if it finds any. Discard and
+re-run anything it flags.
+
+## Triggering
+
+Measured natively: arm B has all ten skills and picks for itself, so every run records
+whether a skill fired and which one. `report.py` reports the fire rate and splits arm B
+into all-runs and fired-only means.
+
+This matters because a perfect skill whose description never matches is worth zero in
+production, and a design that hands the agent the right skill would hide that entirely.
 
 ## Layout
 
@@ -152,7 +161,10 @@ examples/
 ├── graders/rubrics.py    # 51 per-task checks, each citing a skill line
 ├── fixtures/             # 32 naive/skilled pairs proving the graders discriminate
 ├── validate_graders.py   # offline, no key — CI fails if a rubric stops separating
-├── run.py                # generator (needs a key)
+├── setup_arms.py         # two clean scratch dirs; skills installed in B only
+├── record.py             # append one generation to the manifest, schema enforced
+├── check_contamination.py# arm A must never have seen a skill
 ├── grade.py              # blind grader -> results.tsv
-└── reproduce.sh
+├── report.py             # -> RESULTS.md
+└── PROMPT.md             # the brief for an orchestrating Claude Code session
 ```
