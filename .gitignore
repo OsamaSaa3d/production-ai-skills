@@ -1,6 +1,4 @@
-<<<<<<< HEAD
 TO DO.md
-=======
 # Python
 __pycache__/
 *.py[cod]
@@ -22,4 +20,3 @@ Thumbs.db
 # Local scratch
 scratch/
 *.local.md
->>>>>>> f367f11cbd30b2e6dde4711d1cd3327b87a18f72
