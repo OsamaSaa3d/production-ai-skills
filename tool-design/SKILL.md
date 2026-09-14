@@ -233,8 +233,7 @@ Tool definitions are charged on every request before any work happens. Five MCP 
 Mark tools `defer_loading: true` and add a search tool. Only the search tool (~500 tokens) plus your always-loaded tools enter context upfront; the rest are discovered on demand.
 
 ```python
-client.beta.messages.create(
-    betas=["advanced-tool-use-2025-11-20"],
+client.messages.create(
     model="...",
     max_tokens=4096,
     tools=[
@@ -278,12 +277,11 @@ Different problem, different fix. Here the definitions are fine but *results* fl
 Mark tools callable from code, enable code execution, and the agent writes Python that orchestrates them in a sandbox. Only the script's final output enters context.
 
 ```python
-client.beta.messages.create(
-    betas=["advanced-tool-use-2025-11-20"],
+client.messages.create(
     model="...",
     max_tokens=4096,
     tools=[
-        {"type": "code_execution_20250825", "name": "code_execution"},
+        {"type": "code_execution_20260120", "name": "code_execution"},
         {
             "name": "get_expenses",
             "description": (
@@ -294,7 +292,7 @@ client.beta.messages.create(
                 "  - date (str): ISO 8601"
             ),
             "input_schema": {...},
-            "allowed_callers": ["code_execution_20250825"],
+            "allowed_callers": ["code_execution_20260120"],
         },
     ],
 )
@@ -362,7 +360,7 @@ Small description changes produce large effects — Claude Sonnet 3.5's SWE-benc
 
 **Adding all three features at once.** Start with your actual bottleneck — wrong tool → naming, wrong arguments → examples, definition bloat → tool search, result bloat → programmatic calling. Layer only after measuring.
 
-**Assuming these are GA.** Tool search, programmatic calling, and tool use examples are beta and require `advanced-tool-use-2025-11-20`. Tool search is unsupported on Opus 4.1 and earlier. Verify current status before depending on them.
+**Assuming a feature is available on your model.** Tool search, programmatic tool calling, and `input_examples` are generally available with no beta header, but each has a model floor — tool search and programmatic calling need Opus 4.5 / Sonnet 4.5 or later, and tool search is unsupported on Opus 4.1 and earlier. Version strings are date-stamped and move (`code_execution_20260120` superseded `code_execution_20250825`). Check the provider's current tool reference before pinning one.
 
 ## References
 
