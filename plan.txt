@@ -34,9 +34,13 @@ production-ai-skills/
 │
 
 
+READ FROM HERE AND WHEN U R FINISHED, ADD REFERENCES TO ALL OTHER SKILLS. 
+CHECK HOW REFERENCES WORK AND IF THEY ACTUALLY GET READ BY THE LLM.
 
 ├── system-prompt-engineering/
 │   └── SKILL.md
+
+
 |-- memory and all sorts of memories episodic and stuff and learning rules and creating your own .md file for learning user behavior
 |-- context management and sliding window and shit.
 │
