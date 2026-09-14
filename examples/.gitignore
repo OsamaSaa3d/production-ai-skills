@@ -1,0 +1,4 @@
+# Generated outputs land here. Committed deliberately after a run, not before.
+runs/*/*.md
+runs/manifest_*.jsonl
+results.tsv
