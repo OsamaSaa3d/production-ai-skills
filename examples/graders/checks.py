@@ -80,13 +80,15 @@ def _const_false_for(answer: str, key: str) -> bool:
 # ---------------------------------------------------------------- checks
 
 def uses_native_tool_calling(a: str) -> bool:
-    """A real tool definition exists: either passed as tools=, or present as a
-    schema-shaped dict (name + description + parameters/input_schema). The second
-    form matters because a tool *definition* is often the whole deliverable."""
-    if "tools" in _kwargs(a):
-        return True
+    """A real, hand-written tool schema exists.
+
+    A bare `tools=` kwarg is not enough: framework constructors take one too
+    (AgentExecutor(tools=[...])), and passing a list of framework tool objects is
+    the thing this check exists to distinguish from. Require a schema-shaped dict
+    literal — name plus parameters/input_schema — which only a native definition has.
+    """
     keys = _dict_keys(a)
-    return ("name" in keys and {"parameters", "input_schema"} & keys)
+    return bool("name" in keys and ({"parameters", "input_schema"} & keys))
 
 
 def strict_mode_on(a: str) -> bool:
@@ -94,7 +96,17 @@ def strict_mode_on(a: str) -> bool:
 
 
 def additional_properties_false(a: str) -> bool:
-    return _const_false_for(a, "additionalProperties")
+    """Strict mode requires additionalProperties:false on every object.
+
+    Two legitimate routes: write it in a raw schema, or hand a Pydantic/Zod model
+    to the SDK's parse()/structured helper, which injects it during conversion.
+    Pydantic does not emit the field itself, so requiring the literal would
+    penalise exactly the path structured-output/SKILL.md recommends by default.
+    """
+    if _const_false_for(a, "additionalProperties"):
+        return True
+    sdk_injects = re.search(r"\.parse\(", a) and re.search(r"response_format\s*=|BaseModel", a)
+    return bool(sdk_injects)
 
 
 def no_framework(a: str) -> bool:
@@ -102,8 +114,17 @@ def no_framework(a: str) -> bool:
 
 
 def keeps_framework(a: str) -> bool:
-    """Control t04: the user's load-bearing framework survives."""
-    return bool(re.search(r"\blanggraph\b", a, re.I))
+    """Control t04: the user's load-bearing framework survives *in the code*.
+
+    Mentioning it in prose is not keeping it — "you don't need LangGraph" names it
+    while removing it. Require it in an import or a call inside a code block, and
+    fail outright on prose that proposes dropping it.
+    """
+    if re.search(r"(don'?t need|drop(ping)?|remove|rip out|without|replace)\s+"
+                 r"(the\s+)?langgraph", a, re.I):
+        return False
+    return bool(re.search(r"(from|import)\s+langgraph|langgraph\.\w+|StateGraph",
+                          code(a), re.I))
 
 
 def tool_result_role(a: str) -> bool:

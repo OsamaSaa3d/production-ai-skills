@@ -83,18 +83,31 @@ number that decides is cost per *passing* run, per `model-selection`.
 A grader nobody tested is a number nobody should trust. Each rubric was validated
 against hand-written naive/skilled fixture pairs in `fixtures/` before any run:
 
-| Pair | Naive | Skilled |
-|---|---|---|
-| `t01` NL→SQL | 0.00 | 1.00 |
-| `t09` query-DSL trap | 0.00 | 1.00 |
-| `t13` architecture trap | 0.00 | 1.00 |
-| `t08` **control** — prose summary | **1.00** | **0.00** (over-applied) |
+**All 16 rubrics are validated**, and `examples/validate_graders.py` enforces it in
+CI: every rubric must separate its pair by at least 0.40 or the build fails.
 
-The last row is the important one: the grader **can and will penalise the skills arm**.
-That is what makes the outcome falsifiable rather than decorative.
+| | Worse fixture | Better fixture | Separation |
+|---|---|---|---|
+| 10 positives | 0.00–0.50 | 1.00 | +0.50 to +1.00 |
+| 3 traps (`t09`, `t13`, `t14`) | 0.00 | 1.00 | +1.00 |
+| 3 controls (`t04`, `t08`, `t12`) | 0.00–0.50 *(over-applied)* | 1.00 *(restrained)* | +0.50 to +1.00 |
 
-Writing these fixtures found three real bugs in the graders — including a false
-positive on `sql_is_safe`, the most consequential check — all before a cent was spent.
+The control rows are the important ones: there, the **restrained** answer scores high
+and the skill-applying answer scores low. The grader can and will penalise the skills
+arm. That is what makes the outcome falsifiable rather than decorative.
+
+Writing these fixtures found **six real bugs in the graders**, all before a cent was
+spent — among them a false positive on `sql_is_safe` (the most consequential check,
+which was failing a correctly parameterised query), a `uses_native_tool_calling` that
+was fooled by `AgentExecutor(tools=...)`, a `keeps_framework` that passed an answer
+for *mentioning* LangGraph while removing it, and an `additionalProperties` check that
+penalised the idiomatic Pydantic path the skill itself recommends.
+
+Run it yourself — no API key needed:
+
+```bash
+python3 examples/validate_graders.py
+```
 
 ## Cost
 
@@ -137,7 +150,8 @@ examples/
 ├── tasks/tasks.py        # the 16 prompts
 ├── graders/checks.py     # 25 mechanical checks
 ├── graders/rubrics.py    # 51 per-task checks, each citing a skill line
-├── fixtures/             # naive/skilled pairs proving the graders discriminate
+├── fixtures/             # 32 naive/skilled pairs proving the graders discriminate
+├── validate_graders.py   # offline, no key — CI fails if a rubric stops separating
 ├── run.py                # generator (needs a key)
 ├── grade.py              # blind grader -> results.tsv
 └── reproduce.sh

@@ -23,3 +23,6 @@ jobs:
 
       - name: Validate skill structure, links, and conventions
         run: python3 scripts/lint_skills.py
+
+      - name: Validate eval graders against their fixtures
+        run: python3 examples/validate_graders.py
