@@ -1,8 +1,10 @@
 # Estimating Cost Per Architecture Before You Build
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 The purpose of this file is to let you kill an architecture on a whiteboard instead of after the first invoice. Multi-step cost is an architecture problem, not a pricing problem: context gets re-passed and re-billed at every step, retries redo work, and coordination burns tokens producing nothing.
 
-For per-model, per-task cost accounting once you *have* a system, see `model-selection`'s `references/cost-modeling.md`. This one is about choosing the shape.
+For per-model, per-task cost accounting once you *have* a system, see `model-selection/references/cost-modeling.md`. This one is about choosing the shape.
 
 ## The multipliers
 
@@ -13,10 +15,11 @@ Relative to one well-constructed single call, on the same task:
 | Single call | 1x | — |
 | Augmented call (tools, retrieval) | 1.5–3x | Tool definitions, retrieved context, one or two tool round-trips |
 | Workflow, 3 steps | 3–5x | Each step re-sends what it needs |
-| Agent | ~15x a single call | Accumulating transcript, re-billed every iteration |
-| Multi-agent | ~15x a *chat interaction* | Per-worker context, plus planning and synthesis |
+| Chat interaction | ~4x | Multi-turn history re-sent every turn |
+| Agent | ~15x | Accumulating transcript, re-billed every iteration (~4x a chat interaction) |
+| Multi-agent | ~60x | Per-worker context, plus planning and synthesis (~15x a chat interaction) |
 
-Anthropic's published figures anchor the bottom two rows: agents run roughly 4x the tokens of a chat interaction, multi-agent systems roughly 15x, with token usage explaining most of the performance variance in their research eval.
+Published figures from Anthropic anchor the bottom rows, and they are quoted *relative to a chat interaction*: agents run roughly 4x the tokens of a chat interaction, multi-agent systems roughly 15x, with token usage explaining most of the performance variance in their research eval. The column above restates both against a single call so the rows are comparable — multi-agent is roughly 4x an agent, not equal to one.
 
 Use these to reject ideas early. If a single call costs $0.004 and the task is worth $0.02, the multi-agent version is dead before you open an editor.
 

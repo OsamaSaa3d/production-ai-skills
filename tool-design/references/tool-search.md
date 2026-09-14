@@ -1,10 +1,12 @@
 # Tool Search
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Fixes **context bloat from tool definitions**. A typical multi-server setup (GitHub, Slack, Sentry, Grafana, Splunk) can consume ~55K tokens in definitions before Claude does any work. Tool search typically reduces this by over 85%, loading only the 3–5 tools needed for a given request.
 
 It also fixes selection accuracy, which is the less-advertised half: selection degrades once you exceed roughly 30–50 available tools, and a focused on-demand set keeps it high across thousands. Reported internal MCP-eval accuracy: 49% → 74% (Opus 4), 79.5% → 88.1% (Opus 4.5).
 
-**Status:** generally available, no beta header. Supported on Opus 4.5 and later, Sonnet 4.5 and later, Haiku 4.5, and the Fable/Mythos tiers. **Opus 4.1 and earlier do not support it.** On Amazon Bedrock it is available through InvokeModel only, not Converse.
+**Status (Anthropic API):** generally available, no beta header. Model support is an explicit allowlist, not a "version X and later" rule — check the provider's current compatibility table rather than inferring from a model's release date, because recent models have been absent from it. Opus 4.1 and earlier do not support it. On Amazon Bedrock it is available through InvokeModel only, not Converse.
 
 ## The two variants
 
@@ -28,7 +30,7 @@ Start with regex if your naming is disciplined, BM25 if it is not. Then A/B them
 
 ```python
 response = client.messages.create(
-    model="claude-opus-5",
+    model=MODEL,
     max_tokens=2048,
     tools=[
         {"type": "tool_search_tool_regex_20251119", "name": "tool_search_tool_regex"},

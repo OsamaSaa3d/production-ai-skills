@@ -1,5 +1,7 @@
 # The `/models` Endpoint
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Discovery and periodic review, never per-request selection. This file is the response shape, the filters worth writing, and the fields that decide whether a model is usable at all.
 
 ## The call
@@ -126,7 +128,7 @@ No pricing, no capabilities, no context length. You cannot gate on that, so you 
 Anthropic's Models API sits in between: `GET /v1/models` and `GET /v1/models/{id}` return `id`, `display_name`, `created_at`, and — since March 2026 — `max_input_tokens` (the context window), `max_tokens` (the output cap), and `capabilities`. Note there is no `context_window` field; `max_input_tokens` is the one you want.
 
 ```python
-model = client.models.retrieve("claude-opus-5")
+model = client.models.retrieve(MODEL_ID)
 model.max_input_tokens      # context window
 model.max_tokens            # output cap
 model.capabilities          # feature support

@@ -1,1 +1,25 @@
+<<<<<<< HEAD
 TO DO.md
+=======
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local scratch
+scratch/
+*.local.md
+>>>>>>> f367f11cbd30b2e6dde4711d1cd3327b87a18f72

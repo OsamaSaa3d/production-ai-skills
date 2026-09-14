@@ -5,6 +5,10 @@ description: Use this skill when someone proposes splitting an LLM system into m
 
 # Subagents and Multi-Agent Systems
 
+> **Provider-neutral.** The practice here applies to any LLM provider. Code samples name one provider's syntax to stay concrete; equivalents exist elsewhere under different names, and genuinely provider-specific features are labelled where they appear.
+>
+> **Verify before you build.** Endpoint shapes, parameter names, limits, and model support all move. Search the provider's current API reference before relying on any of them. If something here is stale, make the *smallest* edit that corrects it — replace the outdated token, leave the surrounding argument intact.
+
 ## Core principle
 
 Most systems described as "multi-agent" should be **one agent that spawns subagents**. Genuinely independent coordinating agents are a narrow case with a high cost.
@@ -29,6 +33,8 @@ Before reaching for multiple agents, check whether your reason has been absorbed
 If your reason is in the top two rows, fix the single agent first. Adding agents to solve a tool-count problem that `defer_loading` already solves buys you coordination failure modes for nothing.
 
 ## Subagents: the common case
+
+The examples below use the Claude Agent SDK because it makes the four decisions explicit — name, tool subset, model, return shape. **Nothing in this skill depends on that SDK.** A subagent is a second call to any provider with its own system prompt, its own tool list, and a prompt string from the parent; the sections after this one are about what to put in those, which is portable. Where a concrete option name appears (`AgentDefinition`, `allowed_tools`, `CLAUDE_CODE_*`), read it as "your harness's equivalent."
 
 ```python
 from claude_agent_sdk import query, ClaudeAgentOptions, AgentDefinition
@@ -133,6 +139,8 @@ async for message in query(
     if isinstance(message, ResultMessage):
         print(f"{message.subtype}: ${message.total_cost_usd}")
 ```
+
+The three caps below are the Claude Agent SDK's; every harness that spawns subagents needs the same three, whatever it calls them. If yours has no budget cap, you own that one — track spend in the loop and stop.
 
 | Limit | Default | Behavior at the limit |
 |---|---|---|

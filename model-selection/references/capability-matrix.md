@@ -1,5 +1,7 @@
 # Maintaining a Capability Matrix
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Most OpenAI-compatible providers return only `{id, created, owned_by}` from `GET /v1/models`. You cannot gate on that, so the matrix becomes yours to own. This is how to build one that stays true, because a stale matrix is worse than none — it gives you the confidence of a gate with none of the protection.
 
 ## What goes in it
@@ -187,7 +189,7 @@ A fallback to a model without strict tool support is the templating failure agai
 Don't hand-maintain what a provider will tell you. Anthropic's Models API returns `id`, `display_name`, `created_at`, and — since March 2026 — `max_input_tokens` (the context window), `max_tokens` (the output cap), and `capabilities`:
 
 ```python
-model = client.models.retrieve("claude-opus-5")
+model = client.models.retrieve(MODEL_ID)
 model.max_input_tokens
 model.capabilities
 ```

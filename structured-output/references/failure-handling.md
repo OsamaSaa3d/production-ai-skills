@@ -1,5 +1,7 @@
 # Handling the Failure Modes
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Strict mode guarantees conformance except in two cases, and both appear in real traffic. Write the wrapper once and call it everywhere; the alternative is these four lines forgotten at one call site out of twelve.
 
 ## The two cases

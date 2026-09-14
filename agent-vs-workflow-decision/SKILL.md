@@ -5,6 +5,10 @@ description: Use this skill before writing any code when the user asks for an "a
 
 # Choosing Between a Single Call, a Workflow, and an Agent
 
+> **Provider-neutral.** The practice here applies to any LLM provider. Code samples name one provider's syntax to stay concrete; equivalents exist elsewhere under different names, and genuinely provider-specific features are labelled where they appear.
+>
+> **Verify before you build.** Endpoint shapes, parameter names, limits, and model support all move. Search the provider's current API reference before relying on any of them. If something here is stale, make the *smallest* edit that corrects it — replace the outdated token, leave the surrounding argument intact.
+
 ## Core principle
 
 Find the simplest architecture that solves the problem, and add complexity only when it demonstrably improves outcomes. Most systems people describe as agents are workflows. Many workflows are a single well-constructed LLM call with retrieval and good examples.

@@ -119,6 +119,6 @@ Rules:
 
 **Down to a plain workflow** when you notice the planner producing the same decomposition every time. That is a fixed pipeline with extra steps and a planning call you are paying for. Hard-code it.
 
-**Up to separate agents** only when workers genuinely need to negotiate — to exchange partial findings, challenge each other, and converge. That is rare, it is roughly 15x the tokens of a chat interaction, and the independence test in `agent-vs-workflow-decision`'s `references/multi-agent.md` is the gate.
+**Up to separate agents** only when workers genuinely need to negotiate — to exchange partial findings, challenge each other, and converge. That is rare, it is roughly 15x the tokens of a chat interaction, and the independence test in `agent-vs-workflow-decision/references/multi-agent.md` is the gate.
 
 **Sideways to subagents** when you want the model to decide *whether* to delegate at all, rather than always decomposing. The orchestrator-workers shape always plans; subagent delegation is discretionary. If most tasks don't need decomposition, the always-plan cost is waste.

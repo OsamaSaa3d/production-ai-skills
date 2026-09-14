@@ -1,5 +1,7 @@
 # Context Management
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Four strategies, in the order you should reach for them. Each trades something different; none is free.
 
 | Strategy | Removes | Cost | Reach for it when |

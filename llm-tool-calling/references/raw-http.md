@@ -1,5 +1,7 @@
 # Tool Calling Over Raw HTTP
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Use the SDK by default. Reach for raw HTTP in four cases: an OpenAI-compatible endpoint the official client handles badly, a zero-dependency environment, a language with no official SDK, or debugging — when you need to see precisely what went on the wire.
 
 ## The same weather example, as a POST
@@ -83,7 +85,7 @@ HEADERS = {
 }
 
 payload = {
-    "model": "claude-opus-5",
+    "model": MODEL,
     "max_tokens": 1024,                 # required on every Anthropic request
     "tools": [{
         "name": "get_weather",

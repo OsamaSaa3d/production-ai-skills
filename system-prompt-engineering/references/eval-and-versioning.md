@@ -1,5 +1,7 @@
 # Prompt Evals and Versioning
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 ## Treat the prompt as application code
 
 Prompts are behavior. Manage them the way you manage behavior. Prefer code-managed prompt modules over provider-hosted prompt objects — OpenAI is deprecating reusable prompt objects specifically in favor of this pattern.
@@ -121,7 +123,7 @@ A prompt is only validated against the model it was measured on. Record both, an
 
 ```python
 CONFIG = {
-    "model": "claude-opus-5",          # pinned, not an alias
+    "model": MODEL_ID,                 # a specific pinned ID, never a moving alias
     "prompt_version": "support_reply@2026-03-14",
     "reasoning_effort": "medium",
     "verbosity": "low",

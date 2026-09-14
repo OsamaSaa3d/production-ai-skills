@@ -1,5 +1,7 @@
 # Tool Use Examples
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 `input_examples` fixes the **right tool, wrong arguments** failure. It is an optional array of example input objects on the tool definition, and it is the cheapest fix available for conventions the schema cannot express.
 
 Anthropic reports it taking accuracy from **72% to 90%** on complex parameter handling.

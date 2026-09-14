@@ -1,5 +1,7 @@
 # Schema Design for Extraction
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Strict mode guarantees you get an object matching your schema. It guarantees nothing about whether the values are in the document. Every pattern here exists to make the difference visible.
 
 ## The "not found" path is the whole game

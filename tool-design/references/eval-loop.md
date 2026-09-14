@@ -1,5 +1,7 @@
 # The Tool Optimization Harness, End to End
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Every remedy in the tool-design skill costs something — tool count, tokens, latency, or complexity. This loop is what makes them safe to apply: write the natural tool first, measure, then fix the failure the measurement names.
 
 ## The seven steps

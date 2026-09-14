@@ -1,5 +1,7 @@
 # Systems With Many Tools
 
+> **Verify before you build.** Parameter names, limits, and model support named below move between releases. Check the provider's current API reference before relying on them, and correct any drift with the smallest possible edit.
+
 Two separate problems get conflated here, and they have different fixes:
 
 - **Selection accuracy** degrades as the catalog grows. The model picks the wrong tool, or invents one.
@@ -70,7 +72,7 @@ Constraints:
 - **Add a system-prompt line naming the categories available**, so the model knows what to search for rather than guessing search terms.
 - Deferred tools don't break prompt caching — they're excluded from the initial prompt entirely, so the cacheable prefix stays stable.
 
-Details and the MCP toolset config in `tool-design`'s `references/tool-search.md`.
+Details and the MCP toolset config in `tool-design/references/tool-search.md`.
 
 ## Fix 4: dispatchers
 

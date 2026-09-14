@@ -5,6 +5,10 @@ description: Use this skill when choosing which model to call, when hardcoding a
 
 # Model Selection
 
+> **Provider-neutral.** The practice here applies to any LLM provider. Code samples name one provider's syntax to stay concrete; equivalents exist elsewhere under different names, and genuinely provider-specific features are labelled where they appear.
+>
+> **Verify before you build.** Endpoint shapes, parameter names, limits, and model support all move. Search the provider's current API reference before relying on any of them. If something here is stale, make the *smallest* edit that corrects it — replace the outdated token, leave the surrounding argument intact.
+
 ## Core principle
 
 **Accuracy first, cost second.** Start development on the most capable model available and get the system actually working. Only then find the cheapest model that holds that quality.
