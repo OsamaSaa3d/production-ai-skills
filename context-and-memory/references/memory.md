@@ -54,42 +54,13 @@ An agent writing its own rules is a self-modifying system prompt. Genuinely usef
 The split that makes it safe:
 
 ```text
-learned/candidates.md    ← agent-writable, append-only
-AGENTS.md                ← human-reviewed, promotion requires a diff + an eval case
+learned/candidates.md    ← agent-writable, append-only, never loaded
+AGENTS.md / CLAUDE.md    ← human-reviewed, loaded every request
 ```
 
-Candidate format:
+Promotion requires all four: it recurred, it isn't already covered, it can't be enforced mechanically instead, and there is an eval case that fails without it. That last one is the criterion that lets you ever delete the rule again.
 
-```markdown
-## 2026-03-14 — migrations need the schema regenerated
-Observed: added a column, tests failed with a stale-type error. Took 3 turns
-to find that `pnpm db:generate` must run after every migration.
-Proposed rule: After editing anything in `db/migrations/`, run `pnpm db:generate`.
-Evidence: session a4f2, turns 12-18.
-```
-
-Promotion criteria — all four:
-
-1. **It recurred.** One occurrence is an incident, not a rule.
-2. **It isn't already covered** by an existing rule, a tool description, or the model's defaults.
-3. **It cannot be enforced mechanically instead.** See below.
-4. **There is an eval case that fails without it.** This is the one people skip, and it's the one that lets you ever delete the rule again.
-
-Without criterion 4, `AGENTS.md` becomes a graveyard: every line might be load-bearing, none can be tested, so nothing is ever removed.
-
-## Prefer a hook to a learned instruction
-
-Instructions are advisory — the model chooses whether to follow them. Hooks run regardless.
-
-| Rule | Belongs in |
-|---|---|
-| Run the formatter after every edit | A hook or pre-commit |
-| Never commit without tests passing | A hook or CI |
-| Regenerate types after a migration | A build step, or a hook on that path |
-| Don't touch `vendor/` | Permissions config |
-| Prefer composition over inheritance here | An instruction — it needs judgment |
-
-Moving a rule into a hook gets 100% compliance and costs zero instruction budget. Roughly: **if a deterministic check can decide it, don't ask the model.**
+Entry format, observation-versus-inference, contradiction handling, pruning cadence, and the per-user privacy case: `learned-rules.md`.
 
 ## Anthropic's memory tool
 
@@ -163,4 +134,4 @@ Memory that is always loaded is just a longer system prompt, with all the attent
 
 **Unbounded memory files.** Cap size, cap `view` output, page the rest.
 
-**Trusting memory content as instructions.** Memory files are writable by a process that reads untrusted input. Treat their contents as data with the same suspicion as tool output — see `prompt-injection.md`.
+**Trusting memory content as instructions.** Memory files are writable by a process that reads untrusted input. Treat their contents as data with the same suspicion as tool output — see `system-prompt-engineering`.
