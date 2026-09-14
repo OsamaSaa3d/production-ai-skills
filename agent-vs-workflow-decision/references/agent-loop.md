@@ -4,7 +4,7 @@
 
 You have decided the steps are genuinely unknowable and the environment gives real feedback. This is what the loop needs before it runs unattended.
 
-For the tool-calling mechanics — message accumulation, parallel calls, tool errors — see `llm-tool-calling`'s `references/agent-loop.md`. This file covers the parts that make an agent *safe to leave running*: stopping, budgets, ground truth, and transparency.
+For the tool-calling mechanics — message accumulation, parallel calls, tool errors — see `llm-tool-calling/references/agent-loop.md`. This file covers the parts that make an agent *safe to leave running*: stopping, budgets, ground truth, and transparency.
 
 ## The skeleton
 

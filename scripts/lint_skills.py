@@ -27,6 +27,13 @@ NAME_MAX = 64
 LOCAL_REF_RE = re.compile(r"(?<![\w/])references/([a-z0-9][a-z0-9-]*\.md)")
 # Cross-skill: `other-skill/references/foo.md`
 CROSS_REF_RE = re.compile(r"([a-z0-9][a-z0-9-]*)/references/([a-z0-9][a-z0-9-]*\.md)")
+# Prose of the form `other-skill`'s `references/foo.md`. Always wrong: an agent
+# resolves the bare references/ path against the file it is already reading. When
+# both skills happen to own a file of that name it resolves silently to the wrong
+# one, which is why this needs its own rule rather than relying on link checking.
+POSSESSIVE_REF_RE = re.compile(
+    r"`([a-z0-9][a-z0-9-]*)`'s\s+`references/([a-z0-9][a-z0-9-]*\.md)`"
+)
 
 # Vendor model ids must not be hardcoded in samples; use a placeholder instead.
 VENDOR_MODEL_RE = re.compile(
@@ -123,6 +130,14 @@ def check_links(md: Path, skill_dir: Path, skill_names: set[str]) -> None:
             continue  # not a cross-skill path, e.g. a directory in prose
         if not (ROOT / other / "references" / ref).is_file():
             err(md, f"cross-skill reference does not exist: {other}/references/{ref}")
+
+    for other, ref in POSSESSIVE_REF_RE.findall(text):
+        err(
+            md,
+            f"cross-skill reference written as `{other}`'s `references/{ref}` — an "
+            f"agent resolves that against its own directory; write "
+            f"`{other}/references/{ref}`",
+        )
 
     # Strip cross-skill matches so they aren't re-flagged as local.
     local_text = CROSS_REF_RE.sub("", text)
