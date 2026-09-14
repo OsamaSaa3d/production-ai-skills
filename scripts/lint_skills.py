@@ -11,6 +11,7 @@ Exit code 1 if any error is found. Warnings never fail the build.
 
 from __future__ import annotations
 
+import ast
 import re
 import sys
 from pathlib import Path
@@ -36,6 +37,13 @@ VENDOR_MODEL_RE = re.compile(
     r"|o[1-9]-(?:mini|preview)"
     r")\b"
 )
+
+# A ```python fence holding box-drawing or arrow glyphs *and* failing to parse
+# is a diagram or table that was tagged as code. Both conditions are required:
+# many valid samples put an arrow in a comment, and many valid samples are
+# deliberate fragments that do not parse.
+PY_FENCE_RE = re.compile(r"```python\n(.*?)```", re.S)
+NOT_CODE_RE = re.compile(r"[─│└├┌┐┘→←↔⇒]")
 
 VERIFY_MARKER = "Verify before you build"
 # Anything naming a concrete wire contract must carry the verify banner.
@@ -130,6 +138,19 @@ def check_conventions(md: Path, text: str, is_skill_root: bool) -> None:
             f"hardcoded vendor model id {model!r} — skills are provider-neutral; "
             f"use a MODEL placeholder instead",
         )
+
+    for block in PY_FENCE_RE.findall(text):
+        glyph = NOT_CODE_RE.search(block)
+        if not glyph:
+            continue
+        try:
+            ast.parse(block)
+        except SyntaxError:
+            err(
+                md,
+                f"a ```python fence contains {glyph.group()!r} and does not parse — "
+                f"it is a diagram or table, not code; tag it ```text",
+            )
 
     if is_skill_root or API_SURFACE_RE.search(text):
         if VERIFY_MARKER not in text:

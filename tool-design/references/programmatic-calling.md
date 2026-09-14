@@ -136,7 +136,7 @@ That last one is a real case and it is easy to miss. If the task is "read these 
 
 Good candidates are **independent** (parallelizable) and **idempotent** (safe to retry — a script may be rewritten and re-run after a failure).
 
-```python
+```text
 get_expenses       → yes.  read-only, independent, returns bulk data
 search_tickets     → yes.  same shape
 issue_refund       → no.   side-effecting, and a rewritten script re-runs it

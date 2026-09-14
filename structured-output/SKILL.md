@@ -107,7 +107,7 @@ Strict mode rejects schemas that break these rules, so get them right up front:
 # Pydantic
 class Extraction(BaseModel):
     category: str
-    notes: str | None      # renders as {"type": ["string", "null"]}
+    notes: str | None      # Pydantic v2 emits {"anyOf": [{"type": "string"}, {"type": "null"}]}
 ```
 
 The model returns `null` when the field doesn't apply, and your code handles absence explicitly. This is better than an omitted key anyway — you can tell "not present in the source" from "the model forgot."

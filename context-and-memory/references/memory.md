@@ -93,7 +93,7 @@ files that are no longer relevant. Do not create new files unless necessary.
 
 Every file operation is executed by your code, so:
 
-- **Validate that every path starts with `/memories`.** Resolve to canonical form and verify it stays inside. Reject `../`, `..\\`, and URL-encoded variants like `%2e%2e%2f`. Use the platform's path utilities (`pathlib.Path.resolve()` plus `relative_to()`), not string matching.
+- **Validate that every path starts with `/memories`.** Resolve to canonical form and verify it stays inside, using the platform's path utilities (`pathlib.Path.resolve()` plus `relative_to()`), not string matching. Note what that buys you: `resolve()` + `relative_to()` *contains* traversal rather than rejecting it — `../` escapes are caught by `relative_to`, while URL-encoded and backslash variants survive as harmless literal filenames inside the root on POSIX. Containment is the property you need, but if you also want to reject rather than absorb them, match for the encoded forms explicitly before resolving. Match the prefix on a path boundary too, or `/memoriesX/...` passes a bare `startswith`.
 - **Reject `delete` and `rename` on the memory root itself.**
 - **Cap file sizes and cap what `view` returns**, letting the model page with `view_range`.
 - **Expire stale files** that haven't been accessed in a long time.

@@ -37,18 +37,22 @@ def agent_tokens(system, per_tool_result, iterations):
     return total
 ```
 
+Running that function with a 2,000-token prefix (the `SYSTEM_TOKENS` + `TOOL_DEFS_TOKENS` below):
+
 | Iterations | Tool result size | Input tokens billed |
 |---|---|---|
-| 5 | 500 | ~19,000 |
-| 5 | 5,000 | ~68,000 |
-| 15 | 500 | ~72,000 |
-| 15 | 5,000 | ~633,000 |
+| 5 | 500 | 17,000 |
+| 5 | 5,000 | 62,000 |
+| 15 | 500 | 103,500 |
+| 15 | 5,000 | 576,000 |
 
 Two readings, both important:
 
-**Tool result size dominates.** A 10x larger tool result costs roughly 9x more over a 15-iteration run — far more than the same factor on a single call. The cheapest optimization in any agent is nearly always making tools return less. See `tool-design`.
+**Tool result size dominates, and it dominates more the longer the run.** A 10x larger tool result multiplies the whole run's bill by 3.6x at 5 iterations and 5.6x at 15. On a single call that same 10x would add the result once; in a loop it is re-billed on every turn that follows, so the longer the run, the more of the bill is tool results being re-read. The cheapest optimization in any agent is nearly always making tools return less. See `tool-design`.
 
-**Iteration count compounds.** Doubling the cap more than doubles the bill. A cap of 15 is not "three times a cap of 5."
+**Iteration count compounds faster than linearly.** Tripling the cap from 5 to 15 multiplies the bill by 6x, not 3x, because each added iteration re-sends everything before it. A cap of 15 is not "three times a cap of 5."
+
+Recompute the table for your own prefix size rather than reading these numbers off the page — the function above is the whole model, and the shape of the curve is the point, not the absolute values.
 
 Prompt caching flattens the curve substantially — the stable prefix is re-read at a discount — but only if your prefix is actually stable. A transcript that grows at the end and never changes at the front caches well; one where you edit or truncate old tool results does not.
 

@@ -45,10 +45,11 @@ Turn on whatever verbose/callback mode dumps the raw request and read it once. T
 
 The guarantee in this skill rests on one field reaching the provider. Wrappers frequently expose their own `strict` flag with its own default, and some drop the field when converting your schema into their tool type.
 
-```python
-# Two places the guarantee can be off, only one of which you wrote.
-FrameworkTool.from_function(fn, strict=???)   # framework default
-   └─> provider payload: {"strict": ???}      # what actually shipped
+```text
+Two places the guarantee can be off, only one of which you wrote.
+
+FrameworkTool.from_function(fn, strict=???)   <- framework default
+   └─> provider payload: {"strict": ???}      <- what actually shipped
 ```
 
 If you use a wrapper, verify once at the wire: log the outgoing payload, or check that the tool comes back in the response marked strict. "I set `strict=True` in the decorator" is not evidence.
