@@ -58,3 +58,15 @@ CHECK HOW REFERENCES WORK AND IF THEY ACTUALLY GET READ BY THE LLM.
     └── with-skills/
         └── transcript.md              # Same task, clean direct code
 
+
+aslo add this as a reference or sth or mention it breifly somewhere:
+- Parsing becomes unreliable. The model generates queries in its own format. Parsing that output consistently is harder than it sounds and it breaks in production.
+- Token costs grow fast. Every request re-reads the full language description. For complex languages, that's hundreds of tokens per call, adding cost and latency every time.
+- Instructions get ignored. A model's attention span is shorter than its context window. Long, dense prompts cause the model to silently drop instructions, not because it can't read them, but because attention degrades over long contexts.
+
+The better approach: build a tool.
+
+The tool takes queryable fields as input and statically constructs the query. The model's only job is to understand the user's intent and call the tool with the right fields, nothing more.
+
+This gives you reliable output, lower token usage, less latency, and a system that behaves consistently under real load.
+
