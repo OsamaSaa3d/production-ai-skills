@@ -1,6 +1,6 @@
 ---
 name: tool-design
-description: Use this skill whenever you are designing, naming, or refactoring tools for an LLM agent — writing a new tool, building an MCP server, wrapping an API as agent tools, or fixing an agent that calls the wrong tool or passes wrong arguments. Use it when tool definitions are eating the context window, when an agent has more than ~10 tools, when tool results are large, or when someone reports that the agent "usually" gets a tool call right. Covers naming and decomposition, tool use examples, the tool search tool, and programmatic tool calling. Use this alongside llm-tool-calling, which covers the calling mechanics; this skill covers what the tools themselves should look like.
+description: Use this skill whenever you are designing, naming, or refactoring tools for an LLM agent — writing a new tool, building an MCP server, wrapping an API as agent tools, or fixing an agent that calls the wrong tool or passes wrong arguments. Use it when tool definitions are eating the context window, when an agent has more than ~10 tools, when tool results are large, or when someone reports that the agent "usually" gets a tool call right. Use it when an agent needs to query something with a custom syntax — a search DSL, a filter grammar, a reporting language — and the plan is to describe that syntax in the prompt and parse what the model emits. Covers naming and decomposition, taking typed fields instead of query strings, tool use examples, the tool search tool, and programmatic tool calling. Use this alongside llm-tool-calling, which covers the calling mechanics; this skill covers what the tools themselves should look like.
 ---
 
 # Tool Design for Agents
@@ -88,6 +88,49 @@ get_customer_by_id + list_transactions + list_notes  →  get_customer_context
 ```
 
 Each tool should have a clear, distinct purpose that matches how a human would subdivide the task. Overlapping tools distract the agent from efficient strategies.
+
+## Take fields, not strings: never make the agent write a query language
+
+The instinct when an agent needs to query something with a custom syntax — a search DSL, a filter grammar, a reporting language — is to describe the language in the system prompt and let the model emit queries as text. It reads like the flexible option. It is the brittle one.
+
+```python
+# BAD — the model emits a string in a grammar you then have to parse
+SYSTEM = """Query syntax: field:value, field:>value, field:[a TO b],
+AND / OR / NOT ...400 more tokens of grammar... Emit only the query string."""
+
+query = model_output.strip()        # sometimes fenced, sometimes prose-wrapped,
+rows = db.execute(compile(query))   # sometimes subtly invalid grammar
+```
+
+```python
+# GOOD — typed fields in, query constructed in code
+{
+  "name": "search_tickets",
+  "description": "Search the ticket store. Returns id, title, status, opened_at.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "text":     {"type": "string", "description": "Free-text match on title and body"},
+      "status":   {"type": "string", "enum": ["open", "closed", "pending"]},
+      "team":     {"type": "string", "enum": ["platform", "billing", "growth"]},
+      "opened_after": {"type": "string", "format": "date"}
+    },
+    "additionalProperties": false
+  }
+}
+```
+
+The agent's job shrinks to understanding intent and picking fields. Your code owns the grammar. Four reasons, strongest first:
+
+**Safe by construction.** A model emitting executable query text from user-controlled input is an injection surface. With typed fields, a successful injection yields a wrong-but-well-formed query over fields you allowlisted — never arbitrary query text.
+
+**Enforcement instead of parsing.** A DSL string in prose is the one output mode with no constraint available; a tool schema is validated at generation time. "Parsing is unreliable" understates it — you opted out of the guarantee rather than losing it.
+
+**Invalid states stop being representable.** An enum of three statuses cannot produce a fourth. A prose grammar produces anything the model finds plausible, and the dangerous failures are the subtle ones: valid syntax, wrong semantics, passes your parser, returns wrong rows.
+
+**The definition can be deferred; a prompt grammar cannot.** Both cost tokens, so this is not automatic — but a tool definition can sit behind `defer_loading` and enter context only when relevant, while prompt grammar is resident on every request and competes for attention with every other instruction there.
+
+**The limit: this works when the field space is enumerable.** If users need open analytical queries over a schema they explore freely, the answer is not a prompt-described grammar either — it is generated SQL behind a validation gate: parsed, checked against an allowlisted schema, run read-only with a row cap. A deliberate exception with its own safeguards, not the default.
 
 ## Return high-signal context
 

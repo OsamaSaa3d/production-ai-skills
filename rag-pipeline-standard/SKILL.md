@@ -128,6 +128,8 @@ If data lives in a database, CSV, or API, do not embed it. Embedding rows destro
 
 Use RAG for unstructured text attached to structured records (descriptions, comment threads, notes). Those are two tools, not one blended index.
 
+**Build that tool to take typed fields, not a query string.** Describing a query syntax in the prompt and letting the model emit it gives up constrained decoding and turns user-controlled text into something you execute. See `tool-design`.
+
 ## Indexing: chunk, then contextualize
 
 Chunking destroys context — a chunk reading "revenue grew by 3%" names neither the company nor the quarter.
