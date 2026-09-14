@@ -158,6 +158,33 @@ Procedure either way:
 
 Step 3 is the one that keeps prompts from growing monotonically forever. Schedule it even without a model change — quarterly is reasonable.
 
+## Instruction density: measure your own position
+
+"Models can't follow many rules" used to be a reason to keep prompts tight. It is no longer a good one, and the correction is worth knowing precisely because it changes what you should be measuring.
+
+The IFScale benchmark (2025) packed up to 500 simultaneous instructions into one prompt and found the best frontier model of the day managed **68% adherence at 500**. A 2026 replication found that headline had moved by roughly an order of magnitude — current frontier models hold near-perfect adherence into the thousands of constraints, and the ceiling had to be pushed past 5,000 before meaningful degradation appeared.
+
+What survives as a reason to keep a prompt tight:
+
+- The attention budget is finite and context rot is real across all models.
+- Every token is billed on every request, forever.
+- The odds that rule 60 conflicts with rule 12 rise faster than either author notices — and a contradiction presents as unreliability, not as a contradiction.
+- Rules encode capability gaps, and gaps close. An unpruned prompt accumulates dead scaffolding.
+- **Your position on the degradation curve is unknown until you measure it.**
+
+That last one is the operational point, and it belongs to your eval suite rather than to a rule of thumb. Measure it directly:
+
+```text
+- [ ] Take the prompt's own instruction list as the checklist.
+- [ ] Run the regression suite and score per-instruction adherence, not just task success.
+- [ ] Record the count of active instructions alongside the score, per run.
+- [ ] Re-run on every model change, including downgrades.
+```
+
+The count matters because the curve moves under you. Routing a step to a cheaper model to save money can put you somewhere different on it, and a prompt validated at 40 instructions on a frontier model is not validated at 40 instructions on the small one you just switched to.
+
+Order matters somewhat — earlier instructions are better satisfied at moderate densities, and the effect diminishes at extreme densities where failure becomes uniform — but treat that as a tiebreak, not a strategy.
+
 ## Metrics worth a dashboard
 
 | Metric | Watch for |
