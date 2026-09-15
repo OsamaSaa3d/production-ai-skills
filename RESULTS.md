@@ -29,7 +29,7 @@ What that supports, and what it doesn't:
   - extraction that handles refusal and missing fields (t05)
   - stopping conditions on a genuine agent (t16)
 - **Install first:** `tool-design`, `agent-vs-workflow-decision`, then `structured-output`.
-- **A content defect it exposed:** on t11, `tool-design` fired every time and jumped straight to decomposing the tool, skipping the "measure first" step the skill itself asks for.
+- **A possible content gap:** on t11, `tool-design` fired every time and went straight to decomposing the tool, without confirming the failure with an eval or ruling out a plain bug. The prompt did report an observed failure, which the skill treats as grounds to decompose, so this is ambiguous rather than a clear defect. No skill was edited.
 - **Two tasks measured nothing** (t07, t15). They refer to inputs that don't exist in an empty directory, so both arms asked for them instead of writing code.
 - **Three grader bugs were fixed after generation**, on both arms. Before the fixes the headline was 12/3/1, +0.30 [+0.15, +0.44].
 

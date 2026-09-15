@@ -104,13 +104,16 @@ has to take the headline on trust.
 
 ## Content findings worth acting on
 
-- **t11: `tool-design` fired in all 3 runs and jumped straight to its remedy.** The task
+- **t11: `tool-design` fired in all 3 runs and went straight to its remedy.** The task
   was an agent that keeps getting `mode` backwards. Every arm-B run split the tool into
-  `filter_records_including_value` and `filter_records_excluding_value`. The skill says
-  to measure first and not apply this by default, yet no run mentioned measuring or the
-  cost of adding tools. Arm A just fixed the handler. Both arms score 0.00, but this is a
-  content defect: the remedy stands out more than the condition for using it. It is not
-  fixed in this run, per the rules in PROMPT.md.
+  `filter_records_including_value` and `filter_records_excluding_value`. Arm A instead
+  treated it as a handler bug and fixed the branches. Both arms score 0.00. This is
+  **ambiguous, not a clear skill defect**. The prompt reports an observed failure, and the
+  skill says to decompose when the agent demonstrably gets the flag wrong, so arm B
+  followed its trigger. What no arm-B run did was what the rubric asks for: confirm the
+  failure with an eval, rule out a plain implementation bug, and note that more tools
+  cost selection accuracy. The skill could say "a user report is not a measurement"
+  more explicitly. `SKILL.md` was left unchanged: n=3 and one task don't justify an edit.
 - **t12: `llm-tool-calling` fires on "add one tool".** In one of three runs, the answer
   carried ceremony a single tool doesn't need.
 
