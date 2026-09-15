@@ -1,4 +1,174 @@
-# Results
+# Results — skills A/B, run 1
+
+> **Read this section first.** It is written by hand from the generated tables further
+> down; everything from "Generated tables" on is `report.py` output, unedited.
+> Run: 2026-09-15 · `claude-sonnet-5`, effort `high`, Claude Code 2.1.271 headless ·
+> n = 3 per task per arm, 96 generations · skills as of commit `e470e2e` (v1.0).
+
+## Verdict
+
+**The skills helped on the four skills the tasks target, and made no answer worse on
+average.** Arm B won 12 of 16 tasks, tied 4, lost 0. Mean score 0.40 → 0.76 (delta
+**+0.36**, bootstrap 95% CI **[+0.22, +0.51]**).
+
+Read the gain for what it is. A third to a half of it is arm B writing code *the way
+the skills prescribe*: hand-written tool schemas with `strict: true` and
+`additionalProperties: false`. Arm A often used the Anthropic SDK's `@beta_tool` tool
+runner instead, which is a legitimate native approach that the rubrics score as a fail.
+Drop those four style checks and the delta is **+0.20** (see *Sensitivity*).
+
+The effects that survive without the style checks are the ones that matter most:
+- consolidating 14 endpoints into task-shaped tools (t10, +1.00)
+- not building an agent loop for a fixed pipeline (t14, +0.50)
+- handling refusal, truncation and nullable fields in extraction (t05, +0.56)
+- a real stopping condition on a genuine agent (t16, +0.44)
+- typed search fields instead of a query grammar (t09, +0.33)
+
+**Which to install first:** `tool-design` and `agent-vs-workflow-decision`. They carry
+the architecture decisions arm A got wrong, and their gains don't come from style
+checks. Then `structured-output`. `llm-tool-calling` also scored large wins, but mostly
+on style checks, so its content effect is the least certain of the four.
+
+**Six skills were not tested.** The 16 tasks target 4 skills. This run says nothing about
+`context-and-memory`, `evals-before-shipping`, `model-selection`,
+`rag-pipeline-standard`, `subagents-and-multi-agent` or `system-prompt-engineering`.
+
+## Controls: where the skills could lose
+
+No control task has a negative delta. That is the most important result in this file.
+
+| control | what over-application looks like | A | B | delta | note |
+|---|---|---|---|---|---|
+| t04 keep LangGraph | ripping out a load-bearing framework | 0.50 | 1.00 | +0.50 | both arms kept LangGraph 3/3; B also set `strict` |
+| t08 prose summary | forcing a JSON schema on a paragraph | 1.00 | 1.00 | 0.00 | both correct 3/3; no skill fired, which is correct |
+| t12 one trivial tool | tool-search / deferred-loading ceremony | 0.67 | 0.83 | +0.17 | B added ceremony in 1/3 runs; A in 0/3 |
+
+t12 is the one place over-application showed: `minimal_for_trivial_tool` passed 3/3 in
+arm A and 2/3 in arm B, and only the native-schema check put B ahead. Without the style
+checks t12 is **−0.33** (see *Sensitivity*). At n=3 that is a signal to watch, not a
+settled finding.
+
+## By kind
+
+| kind | tasks | mean delta | W/T/L |
+|---|---|---|---|
+| positive | 10 | +0.40 | 7/3/0 |
+| trap | 3 | +0.36 | 3/0/0 |
+| control | 3 | +0.22 | 2/1/0 |
+
+## Triggering
+
+A skill fired in **39 of 48** arm-B runs (81%). On the positives and traps, precision is
+0.87 and recall 0.85 ([TRIGGERING.md](TRIGGERING.md)).
+
+- **Nothing fired in 9 runs:** t07, t08 and t15. t08 is a control, so silence is right.
+  t07 and t15 are task defects rather than description failures (see *Threats*).
+- **An unrelated skill fired in 7 runs:** mostly `llm-tool-calling` loading alongside
+  the right skill. On the t12 control it loaded *instead of* `tool-design` in 2 of 3 runs.
+- **Gain when a skill fired:** +44 pp on the tasks where one could fire, the same as
+  across all runs on those tasks. A skill fired in every run on those tasks, so this run
+  can't tell description quality apart from content quality.
+
+## Effort
+
+| arm | mean turns | mean tool calls | mean cost / run |
+|---|---|---|---|
+| A | 12.3 | 10.7 | $0.354 |
+| B | 11.9 | 9.9 | $0.369 |
+
+Arm B did not do more work: slightly fewer turns and tool calls, and about 4% more cost
+(the skill text in context). The gain is not an effort artifact.
+
+## Sensitivity: how much is style?
+
+Arm A's sessions often used `@beta_tool` with the SDK tool runner. Several pre-registered
+checks don't recognise that path:
+- `uses_native_tool_calling` requires a hand-written schema literal
+- `tool_result_role` requires an explicit tool-result message
+- `strict_mode_on` and `additional_properties_false` require flags that the runner path
+  doesn't show
+
+13 arm-A runs used `@beta_tool` without a literal schema. Those checks cite real skill
+lines, so they stay in the rubrics. But they measure conformance to the skill's
+preferred style as much as correctness.
+
+| checks included | mean delta |
+|---|---|
+| all (pre-registered) | +0.36 |
+| without `uses_native_tool_calling`, `tool_result_role` | +0.30 |
+| also without `strict_mode_on`, `additional_properties_false` | +0.20 |
+
+Without the style checks, t01, t03 and t04 drop to 0.00, and the t12 control drops to
+−0.33. The headline tables keep the pre-registered rubrics. This table is here so nobody
+has to take the headline on trust.
+
+## Content findings worth acting on
+
+- **t11: `tool-design` fired in all 3 runs and jumped straight to its remedy.** The task
+  was an agent that keeps getting `mode` backwards. Every arm-B run split the tool into
+  `filter_records_including_value` and `filter_records_excluding_value`. The skill says
+  to measure first and not apply this by default, yet no run mentioned measuring or the
+  cost of adding tools. Arm A just fixed the handler. Both arms score 0.00, but this is a
+  content defect: the remedy stands out more than the condition for using it. It is not
+  fixed in this run, per the rules in PROMPT.md.
+- **t12: `llm-tool-calling` fires on "add one tool".** In one of three runs, the answer
+  carried ceremony a single tool doesn't need.
+
+## Threats to validity
+
+- **n = 3.** Per-task deltas smaller than the run sd are noise. t09 (B sd 0.38), t12 and
+  t16 are the least stable.
+- **Style vs substance.** The pre-registered rubrics reward the skills' preferred idiom,
+  and arm A's idiom was a valid alternative (see *Sensitivity*).
+- **Two tasks measured nothing.** t07 ("pull the party names … out of *these contracts*")
+  and t15 (research "*our* competitors") refer to inputs that don't exist in an empty
+  directory. In all 12 runs across both arms, the session asked for the documents or the
+  company instead of writing code, and scored 0. These ties come from task defects, and
+  they pull both arms' means down.
+- **Deviation: a non-interactive note.** In a pilot, a word-for-word prompt in an empty
+  directory got clarifying questions and no code. So both arms ran with the same appended
+  system prompt: *"This is a non-interactive session: nobody can answer questions. Make
+  reasonable assumptions, state them briefly, and deliver working code."* It names no
+  skill or technique, and the task prompt itself was passed word for word. The one pilot
+  run was discarded.
+- **Deviation: isolation.** Instead of two shared arm directories, each run got its own
+  fresh empty directory (`run_arm.py`). Sessions ran with `--setting-sources project` and
+  `--strict-mcp-config`, and with claude.ai MCP servers disabled, so no user plugins,
+  global CLAUDE.md or MCP servers reached either arm. Arm A ran to completion before any
+  arm-B directory existed.
+- **Three grader fixes after generation.** Each was applied to both arms, and both arms
+  were re-graded. All 16 rubrics still separate their fixtures.
+  1. Code blocks were matched to each other by position. In answers that also had
+     `md` or `json` blocks, the session's actual code became invisible to the AST checks.
+  2. `no_forced_schema_on_prose` read `output_config={"effort": ...}` as a schema and
+     failed all six correct t08 answers.
+  3. Answers repeat their run path (`…/skills-eval/arm-a/t11-r0`). That told the grader
+     which arm it was reading. The "eval" in the path also passed
+     `measures_before_decomposing` in 2 arm-A runs that never mentioned measuring. Paths
+     are now redacted before grading.
+
+  Before the fixes: W/T/L 12/3/1, delta +0.30 [+0.15, +0.44], with t11 a loss. After:
+  12/4/0, +0.36 [+0.22, +0.51]. Fix 1 moved scores in both directions: it *lowered*
+  arm A on t14 by exposing a loop the old parser missed.
+- **Contamination.** One arm-A run (t14 r2) was flagged for the phrase "structured-output
+  call". Its transcript showed no access to the repository, but per the brief it was
+  discarded and re-run, and the re-run is clean. Final check: 48/48 clean.
+- **Interrupted runs.** Usage limits and memory pressure stopped sessions partway through
+  the queue. Those runs produced no answer and were re-run. No answer was ever read and
+  then discarded, so no run was re-rolled for a better score.
+- **Capture.** An answer is the session's final message plus the files it wrote. A
+  capture bug first swept virtualenvs (up to 40 MB) into three arm-A answers. They were
+  re-captured from the untouched run directories before grading, but git history still
+  contains the bloated versions.
+- **Skills changed during the run.** Commit `e470e2e` edited all ten `SKILL.md` files
+  while arm A was running. Arm A has no skills, so it's unaffected. All of arm B ran
+  against the edited version.
+- **One model, one harness, one day.** Don't assume these results hold for other models
+  or agents until the eval is run there.
+
+---
+
+# Generated tables
 
 Generated by `examples/report.py`. Per task, never aggregate-only.
 

@@ -1,11 +1,41 @@
 # Results
 
-> **Status: no generation results published yet.** The harness is built, pre-registered, and validated in CI. Nothing has been run at a reportable sample size. This file will carry the headline numbers when it has been; until then it carries the method, so you can judge the method before there are numbers to argue with.
-
 The claim these skills make is falsifiable: *installing them changes the code a coding agent writes, for the better, measurably.* This file is where that claim gets settled.
 
+## Run 1 — 2026-09-15
+
+`claude-sonnet-5` at high effort in headless Claude Code, 16 tasks × 3 runs × 2 arms = 96 generations. Arm A's control held: 48 of 48 runs came back clean from the contamination check.
+
+```text
+Skill arm wins: 12
+Ties:            4
+Losses:          0
+
+Mean score   A 0.40   B 0.76   delta +0.36
+Bootstrap 95% CI  [+0.22, +0.51]
+Controls: no negative delta (t04 +0.50, t08 0.00, t12 +0.17)
+Skill fired in 39/48 arm-B runs (81%) · precision 0.87 · recall 0.85
+Effort: B used slightly fewer turns and tool calls, ~4% more cost
+```
+
+What that supports, and what it doesn't:
+
+- **The skills helped on the 4 skills the tasks target**, and no answer got worse on average. The other 6 skills were not tested.
+- **A third to a half of the gain is style.** Arm B wrote hand-written strict schemas the way the skills prescribe. Arm A often used the SDK's `@beta_tool` runner, which is valid but fails those checks. Without the four style checks the delta is **+0.20**, and the t12 control ("add one tool") goes to **−0.33**.
+- **The gains that don't depend on style are architectural:**
+  - task-shaped tools instead of one tool per endpoint (t10)
+  - a workflow instead of an agent loop for a fixed pipeline (t14)
+  - typed search fields instead of a query grammar (t09)
+  - extraction that handles refusal and missing fields (t05)
+  - stopping conditions on a genuine agent (t16)
+- **Install first:** `tool-design`, `agent-vs-workflow-decision`, then `structured-output`.
+- **A content defect it exposed:** on t11, `tool-design` fired every time and jumped straight to decomposing the tool, skipping the "measure first" step the skill itself asks for.
+- **Two tasks measured nothing** (t07, t15). They refer to inputs that don't exist in an empty directory, so both arms asked for them instead of writing code.
+- **Three grader bugs were fixed after generation**, on both arms. Before the fixes the headline was 12/3/1, +0.30 [+0.15, +0.44].
+
+**Full write-up, per-task tables, sensitivity analysis and threats to validity: [examples/RESULTS.md](examples/RESULTS.md).** Discovery: [examples/TRIGGERING.md](examples/TRIGGERING.md). Every generation and transcript is committed under `examples/runs/`.
+
 Full methodology and how to reproduce: **[examples/README.md](examples/README.md)**.
-Generated reports, once runs exist: `examples/RESULTS.md` (scores) and `examples/TRIGGERING.md` (discovery). Both are written by the scripts below; neither is committed until there is something real in it.
 
 ## The design
 
@@ -20,7 +50,7 @@ Generated reports, once runs exist: `examples/RESULTS.md` (scores) and `examples
 
 The control tasks are the point. A benchmark that only contains cases where your advice helps measures nothing. If these skills push an agent into building an agent loop for a task that needed one function call, the controls are where that shows up as a loss.
 
-## What will be reported
+## What the report gives
 
 Averages alone are not evidence. At n=3, `A = 0.67` vs `B = 0.83` is a hint, not a result. So the report gives:
 
@@ -32,16 +62,6 @@ Averages alone are not evidence. At n=3, `A = 0.67` vs `B = 0.83` is a hint, not
 - **Effect size**, both Cohen's *d_z* across tasks and Cliff's delta within them, each named in the output, because a standardized mean difference and a rank-based measure fail in different ways at this sample size
 - **Cost and effort** per arm — if arm B simply did more work, the gain may not be the skill
 
-Shaped like this:
-
-```text
-Skill arm wins: 10
-Ties:            3
-Losses:          3
-
-Mean score   A 0.61   B 0.78   delta +0.17
-Bootstrap 95% CI  [+0.08, +0.25]
-```
 
 ## The second measurement: did the skill even load?
 
@@ -57,7 +77,6 @@ There is a dedicated benchmark for that half of the question — `examples/trigg
 ## Reproducing it
 
 ```bash
-python3 examples/setup_arms.py
 python3 examples/run_arm.py --arm a --runs 3
 python3 examples/run_arm.py --arm b --runs 3
 python3 examples/check_contamination.py

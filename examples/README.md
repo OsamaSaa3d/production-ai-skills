@@ -1,8 +1,9 @@
 # Does any of this actually help? — a measured A/B
 
-> **Status: harness built and validated. Not yet run.** No generation has happened,
-> so there are no results below to read. Everything here — tasks, graders, rubrics —
-> was committed *before* any output existed. That is the point.
+> **Status: run 1 complete (2026-09-15, n=3, 96 generations).** Results:
+> [RESULTS.md](RESULTS.md). Tasks and rubrics were committed *before* any output
+> existed. Three grader bugs found afterwards were fixed on both arms and are
+> documented there. `run_arm.py` is the runner that produced the data.
 
 A hand-picked before/after transcript proves nothing and everyone knows it. This is
 built so a skeptic can run it and get our numbers.
@@ -151,10 +152,11 @@ No API key and no separate spend: the generations come from Claude Code sessions
 `examples/PROMPT.md` is the full brief for an orchestrating session.
 
 ```bash
-python3 examples/setup_arms.py --force      # two clean scratch dirs, skills in B only
-# ... drive one Claude Code session per task per arm, in its arm directory ...
-python3 examples/record.py --arm b --task t09 --run 0 --answer-file out.md \
-        --skill-triggered tool-design --turns 4
+python3 examples/run_arm.py --arm a --runs 3  # all of arm A first, one fresh dir per run
+python3 examples/run_arm.py --arm b --runs 3  # then arm B, skills copied into each dir
+# run_arm.py isolates each session (no user settings, plugins or MCP servers), records
+# through record.py, and resumes from the manifest. To drive sessions by hand instead,
+# use setup_arms.py --force and record.py.
 python3 examples/check_contamination.py     # arm A must never have seen a skill
 python3 examples/grade.py                   # blind, writes results.tsv
 python3 examples/report.py                  # writes RESULTS.md
