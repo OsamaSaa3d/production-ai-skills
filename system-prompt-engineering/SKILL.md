@@ -1,6 +1,7 @@
 ---
 name: system-prompt-engineering
-description: Use this skill when writing, debugging, or refactoring a system prompt, developer message, agent instruction block, AGENTS.md, or CLAUDE.md. Use it when an agent ignores instructions, stops early, is too verbose or too terse, calls tools when it shouldn't, over-engineers, speculates instead of reading files, or behaves inconsistently between runs. Use it when a prompt has grown past a screen, when someone wants to "add a rule" to fix a behavior, when prompt caching is missing or the hit rate dropped, when untrusted content is being interpolated into instructions, or when migrating a prompt to a different model. Covers altitude, prompt structure, contradiction debugging, metaprompting, cache-safe assembly, trust boundaries, and prompt versioning.
+description: Use when writing, debugging, or refactoring a system prompt, developer message, agent instruction block, AGENTS.md, or CLAUDE.md. Use it when an agent ignores instructions, stops early, is too verbose or too terse, calls tools when it shouldn't, over-engineers, speculates instead of reading files, or behaves inconsistently between runs. Use it when a prompt grows past a screen, when someone wants to "add a rule" to fix a behavior, when the cache hit rate drops, or when migrating models.
+version: 1.0
 ---
 
 # System Prompt Engineering
@@ -18,6 +19,43 @@ The system prompt is the only part of the context you fully control, and it is c
 Minimal does not mean short. It means every line is load-bearing. A 4,000-token prompt where each paragraph prevents an observed failure is minimal; a 400-token prompt full of "be helpful and accurate" is not.
 
 And a production system prompt is **a versioned artifact with an eval suite**, not a text box you edit until the last demo looked good. Almost every rule below is a default you should be prepared to disprove.
+
+## Avoid / Prefer
+
+| Avoid | Prefer |
+|---|---|
+| Enumerated case lists | Heuristics with the decision criteria stated |
+| Adding a rule | Finding the contradiction the rule is fighting |
+| Prose where a parameter exists | The parameter |
+| Bare prohibitions | A positive target, with the reason given |
+| Dynamic values in the system prompt | A frozen prefix; volatile facts in `messages` |
+| Tool rules duplicated in the prompt | One copy, in the tool definition |
+| Untrusted text in the system message | User-role messages, plus a gate in code |
+
+Defaults, all of them — and the last two sections of this file are the ones that say when to break them.
+
+## Minimal pattern
+
+```text
+Behavior is wrong?
+    |
+    v
+Name the failure mode from real traces, not from intuition
+    |
+    v
+Check the prompt for a contradiction that already covers it
+    |
+    v
+Reach for a parameter before writing a paragraph
+    |
+    v
+Edit ONE section, at heuristic altitude
+    |
+    v
+Re-run the suite; delete whatever did not move it
+```
+
+Everything below is the deep dive: when each step is wrong, and what to do instead.
 
 ## When to use this skill
 
@@ -276,6 +314,18 @@ Suite structure, prefix-stability test, A/B methodology, CI wiring, model-change
 - **Small models.** Less capacity to absorb ambiguity, so more explicit scaffolding and more few-shot examples genuinely help. Same finding as `model-selection`'s escalation ladder, from the prompt side.
 - **A prompt that is measurably working.** Do not refactor a prompt with a passing eval suite because it looks untidy.
 - **Prototyping.** Overstuff the prompt to find out what the task needs, then cut back with the failure set you now have.
+
+## Success criteria
+
+A prompt edit is a behavior change, so it is judged the way behavior changes are. Before and after, on the same suite and the same sampled traffic:
+
+- **Pass rate per named failure mode**, not one aggregate. An edit that fixes verbosity and breaks tool-eagerness scores flat in aggregate and is a regression.
+- **The symptom's own rate in sampled traces** — early-exit frequency, mean response length, tool calls per task, unrequested-file count. Pick the one the knob was supposed to move and instrument it: `evals-before-shipping/references/tracing-setup.md`.
+- **Run-to-run variance on a fixed input.** Contradictions show up as inconsistency, so resolving one should tighten the spread even where the mean barely moves.
+- **Prompt tokens after the deletion test.** Every line that survives should have failed the removal check; the count going down while the suite holds is the whole point of the exercise.
+- **Cache hit rate (`cache_read_input_tokens` as a share of input tokens).** An assembly change should raise it, and no prompt edit should send it to zero.
+
+If none of these move, the line you added is dead weight charged on every request. Delete it.
 
 ## References
 

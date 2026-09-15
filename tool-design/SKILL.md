@@ -1,6 +1,7 @@
 ---
 name: tool-design
-description: Use this skill whenever you are designing, naming, or refactoring tools for an LLM agent — writing a new tool, building an MCP server, wrapping an API as agent tools, or fixing an agent that calls the wrong tool or passes wrong arguments. Use it when tool definitions are eating the context window, when an agent has more than ~10 tools, when tool results are large, or when someone reports that the agent "usually" gets a tool call right. Use it when an agent needs to query something with a custom syntax — a search DSL, a filter grammar, a reporting language — and the plan is to describe that syntax in the prompt and parse what the model emits. Covers naming and decomposition, taking typed fields instead of query strings, tool use examples, the tool search tool, and programmatic tool calling. Use this alongside llm-tool-calling, which covers the calling mechanics; this skill covers what the tools themselves should look like.
+description: Use when designing, naming, or refactoring tools for an LLM agent — writing a new tool, building an MCP server, wrapping an API as agent tools, or fixing an agent that calls the wrong tool or passes wrong arguments. Use it when tool definitions are eating the context window, when an agent has more than ~10 tools, when tool results are large, or when an agent must query a custom syntax — a search DSL, a filter grammar — and the plan is to describe it in the prompt and parse what the model emits.
+version: 1.0
 ---
 
 # Tool Design for Agents
@@ -25,6 +26,45 @@ Three failure modes, each with a different fix. Diagnose before you reach for a 
 The field names in that table (`input_examples`, `defer_loading`, `allowed_callers`) are the Anthropic API's spelling. Other providers expose some of these under different names and some not at all — the *diagnosis* column is portable, the spelling is not. Check your provider's current tool reference for the equivalent before reaching for one.
 
 **These are remedies, not defaults.** Every one of them costs something — tool count, tokens, latency, or complexity. Write the natural tool first, measure it against a tool-call eval suite, and apply a fix only where the measurement shows a failure. See the measurement loop below; it is the part of this skill that makes the rest safe to use.
+
+## Avoid / Prefer
+
+The table above diagnoses failures. This one is about the shape of the interface you write before any of them show up.
+
+| Avoid | Prefer |
+|---|---|
+| Query-string or DSL parameter | Typed fields with enums, query built in code |
+| One tool per API endpoint | One tool per task the agent actually performs |
+| Everything returned by default | High-signal fields, with a `response_format` enum for the rest |
+| Raw UUIDs in tool output | Names or indices the agent can reason about |
+| Unbounded tool responses | Pagination, filtering, and a deliberate token cap |
+| Tracebacks as error text | Errors that name the next action to take |
+| Names differing by one token | Namespaced names distinguishable at a glance |
+
+These are defaults for the common case; the sections below name the conditions under which each one flips.
+
+## Minimal pattern
+
+```text
+Agent needs to reach a system?
+    |
+    v
+Name the tool for the task, not for the endpoint
+    |
+    v
+Take typed fields; construct the query in your code
+    |
+    v
+Return high-signal fields, capped and paginated
+    |
+    v
+Run a task set that asserts tool AND arguments
+    |
+    v
+Add a remedy only where that measurement showed a failure
+```
+
+Everything below is the deep dive: when each step is wrong, and what to do instead.
 
 ## Wrong arguments on a mode flag: move the discriminator into the name
 
@@ -373,6 +413,19 @@ Small description changes produce large effects — Claude Sonnet 3.5's SWE-benc
 **Adding all three features at once.** Start with your actual bottleneck — wrong tool → naming, wrong arguments → examples, definition bloat → tool search, result bloat → programmatic calling. Layer only after measuring.
 
 **Assuming a feature is available on your provider and model.** Tool search, programmatic tool calling, and `input_examples` are Anthropic API features, generally available with no beta header, but each supports an explicit list of models rather than "version X and later" — and recent models have been absent from those lists. Version strings are date-stamped and move (`code_execution_20260120` superseded `code_execution_20250825`). Search the provider's current tool reference before pinning one, and treat the absence of an equivalent elsewhere as the normal case rather than a surprise.
+
+## Success criteria
+
+Good tool design shows up as numbers on a held-out task set, not as a tidier schema file. Run the same tasks against the old and new designs and compare:
+
+- **Tool-selection correctness** — `ToolCorrectnessMetric` at `threshold=1.0`. This is what naming and namespacing buy, and what inflating tool count costs. Harness: `evals-before-shipping/references/tool-call-suite.md`.
+- **Argument correctness** — the same metric with `INPUT_PARAMETERS`, or `ArgumentCorrectnessMetric` where values can't be predetermined. A name-only assertion reports success on an inverted polarity flag, which is the failure this skill spends tool count to eliminate.
+- **Tool calls per task.** Redundant or repeated calls mean pagination, filtering, or truncation defaults are wrong, not that the agent is confused.
+- **Tokens, split two ways** — definition tokens resident on every request, and tool-result tokens per task. Tool search moves the first; programmatic calling and response budgeting move the second. Tracking one total hides which fix is working.
+- **Invalid-parameter error rate, bucketed by type.** A pile of format errors points at `input_examples` or descriptions; a pile of wrong-field errors points at naming.
+- **End-to-end task completion on the held-out set**, so a fix for one symptom is not quietly traded for a worse one — more tools sharpen each call and degrade selection at the same time.
+
+If none of these move, the redesign did not help on that task set. Keep the simpler tool.
 
 ## References
 

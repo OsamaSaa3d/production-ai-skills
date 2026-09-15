@@ -1,6 +1,7 @@
 ---
 name: context-and-memory
-description: Use this skill when a conversation or agent loop outgrows its context window, or when an agent needs to remember something across a context reset or between sessions. Use it when an agent forgets decisions made earlier in a long task, redoes work it already did, wraps up early because it thinks it is running out of tokens, re-asks what the user already answered, or should be learning a user's preferences and conventions over time. Use it when building compaction, tool-result clearing, a sliding window, a fresh-window handoff, a fact store, a consolidation pass, a self-updating learned-rules markdown file, or a memory tool handler. Covers the four memory types — working, episodic, semantic, procedural — and which one you actually need.
+description: Use when a conversation or agent loop outgrows its context window, or when an agent must remember something across a context reset or between sessions. Use it when an agent forgets earlier decisions, redoes work it already did, wraps up early because it thinks it is out of tokens, re-asks what the user answered, or should be learning a user's conventions over time. Covers compaction, tool-result clearing, fresh-window handoff, fact stores, self-updating rules files, and the four memory types.
+version: 1.0
 ---
 
 # Context and Memory
@@ -16,6 +17,43 @@ The context window is working memory: fast, complete, and gone at the end of the
 > **An episode is not a fact, and a log is not a memory. Something has to perform the reduction — and if nothing does, you have storage, not memory.**
 
 Two consequences run through everything below. First, **every strategy here is lossy or expensive, usually both**, so reach for them in cost order rather than starting with the most sophisticated one. Second, **the failure modes are silent.** A bad compaction, an over-retrieved episode, and a wrong learned rule all look like "the agent is unreliable" 30 turns later, with nothing in the logs pointing back at the cause.
+
+## Avoid / Prefer
+
+| Avoid | Prefer |
+|---|---|
+| A naive sliding window | Clearing processed tool results first |
+| A vector store for a working-memory failure | A context strategy |
+| A transcript log called semantic memory | Distilled claims, each carrying its evidence |
+| Always-loaded memory | Facts retrieved by relevance |
+| Agent-promoted rules | A diff review plus a failing eval case |
+| An instruction for something that must always hold | A hook, a formatter, or CI |
+| A compaction prompt tuned on toy conversations | Tuning on real traces, recall before precision |
+
+These are defaults, not laws; the rest of this file covers the cost of each strategy and the cases — stateless chat, regulated domains, short fixed-budget tasks — where the other column wins.
+
+## Minimal pattern
+
+```text
+Which memory type is the observed failure?
+    |
+    v
+Working memory -- clear raw tool payloads once processed
+    |
+    v
+Still overflowing -- compact, or take a fresh window with a startup ritual
+    |
+    v
+Crosses a session boundary -- distil episodes into attributed claims
+    |
+    v
+Retrieve those claims by relevance; keep only procedural memory resident
+    |
+    v
+Gate every rule and every store on an eval case that fails without it
+```
+
+Everything below is the deep dive: when each step is wrong, and what to do instead.
 
 ## When to use this skill
 
@@ -179,6 +217,20 @@ Handler sketch, consolidation prompt, retrieval policy, and the four types in pr
 - **Regulated domains.** Where every claim about a user must be auditable and deletable on request, an opaque distilled fact store is a liability. Keep memory explicit, attributed, and per-user erasable — or don't keep it.
 - **Short tasks with a fixed budget.** If the task reliably fits in the window, every strategy here is a cost with no benefit. Measure before building any of it.
 - **Prototyping.** Load everything and find out what the agent actually reaches for, then build the retrieval policy against observed usage.
+
+## Success criteria
+
+The failure modes here are silent, so the only way to know a strategy helped is to measure the thing it was supposed to fix:
+
+- **Task completion on long tasks that cross a compaction boundary** — the same task before and after, not a synthetic transcript
+- **Constraint retention across the boundary**: the share of eval cases where a decision or constraint stated pre-compaction is still honoured afterwards
+- **Repeated work per session**: duplicate tool calls, re-read files, and questions the user already answered
+- **Premature wrap-ups**: runs that end with work outstanding while budget remained
+- **Input tokens per turn and cache-hit rate together** — clearing that saves tokens but destroys the cache prefix is not a win
+- **Retrieval precision over the fact store**, scored the way any retriever is scored: see `evals-before-shipping/references/rag-suite.md`
+- **Rules in the instruction file that no eval case depends on** — this number should be zero, and it is what lets you delete a rule later
+
+If none of these move, the memory system is storage and the advice did not help on that task. Unmeasured improvement does not count here, because the damage from getting it wrong surfaces thirty turns away from its cause.
 
 ## References
 

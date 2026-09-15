@@ -1,6 +1,7 @@
 ---
 name: rag-pipeline-standard
-description: Builds and fixes retrieval over private data — knowledge bases, docs search, support bots, and RAG pipelines. Use when someone mentions RAG, vector databases, embeddings, semantic search, or chunking; when retrieval returns irrelevant chunks, misses exact matches like error codes or ticket IDs, answers from the wrong source, or breaks on follow-up questions. Covers RAG vs tool calling vs direct context, document-level retrieval, contextual retrieval, hybrid search, reranking, query rewriting, corpus splitting, agentic retrieval, and vector index selection.
+description: Builds and fixes retrieval over private data — knowledge bases, docs search, support bots, and RAG pipelines. Use when someone mentions RAG, vector databases, embeddings, semantic search, or chunking; or when retrieval returns irrelevant chunks, misses exact matches like error codes or ticket IDs, answers from the wrong source, or breaks on follow-up questions. Covers RAG vs tool calling vs direct context, document-level and contextual retrieval, hybrid search, reranking, and query rewriting.
+version: 1.0
 ---
 
 # RAG Pipeline Standard
@@ -18,6 +19,43 @@ The useful question is not "does the corpus fit in the context window?" It is:
 A corpus can fit in the window and still be wrong to load entirely on every request. Context-window capacity is an upper bound, not a prompt-size target.
 
 Build the evaluation set before tuning. Add pipeline layers in order and stop when evals say you're done. Measure retrieval and generation separately — they fail differently.
+
+## Avoid / Prefer
+
+| Avoid | Prefer |
+|---|---|
+| Context-window size as the retrieval threshold | A budget computed from the actual model |
+| Embedding structured records | A query tool over typed fields |
+| Dense-only search | Dense + BM25, fused with RRF |
+| The chunk as final generation context | The chunk as a pointer to its document |
+| One blended index over distinct sources | One retrieval tool per corpus |
+| The raw follow-up message as the query | A rewritten standalone query |
+| A vector database by default | The database you already operate |
+
+These are defaults for the common case; each section below names the conditions that flip it.
+
+## Minimal pattern
+
+```text
+Is retrieval the right mechanism at all?
+    |
+    v
+Measure document sizes; compute a context budget
+    |
+    v
+Chunk on structure; index dense + BM25 with document metadata
+    |
+    v
+Retrieve, fuse with RRF, rerank
+    |
+    v
+Resolve chunks to documents; fill the budget
+    |
+    v
+Score retriever and generator separately before adding another layer
+```
+
+Everything below is the deep dive: when each step is wrong, and what to do instead.
 
 ## When to use this skill
 
@@ -88,6 +126,8 @@ Query time:
 ```
 
 Do not assume every system needs every layer. Start simple, measure, add complexity only when evaluation shows it helps.
+
+Three of these layers worked end to end — the baseline, the query that broke it, the change, and the measurement that justified keeping it: [references/worked-examples.md](references/worked-examples.md).
 
 ## Document-level retrieval
 
@@ -287,6 +327,21 @@ Details: [references/evaluation.md](references/evaluation.md). Use the `evals-be
 - **Vector database by default.** Start with existing infrastructure.
 - **Generic document summaries on chunks.** Contextualization must be chunk-specific.
 
+## Success criteria
+
+Every layer in the pipeline costs latency, money, and a thing that can break. It earns its place by moving one of these on a fixed eval set, measured before and after the change:
+
+- **Contextual recall** — did the evidence the answer needs actually come back? Hybrid search, query rewriting, and a larger `top_k` move this one first, and nothing downstream can recover what was never retrieved.
+- **Contextual precision** — are the relevant chunks ranked above the irrelevant ones? This is the reranker's metric. High recall with low precision is the specific signature that says add a reranker rather than retrieve more.
+- **Answer faithfulness** — is every claim traceable to the retrieved context? Document-level retrieval and evidence formatting move this; raising `top_k` usually does not.
+- **Answer relevancy** — does the answer address the question asked, rather than the one the retrieved chunks happen to answer?
+- **Routing accuracy across corpora** — the share of queries answered from the right source. Splitting corpora into separate tools should drive it up, and a system that retrieves confidently from the wrong index scores well on the four metrics above while being wrong.
+- **Latency and cost per query.** Rewriting, expansion, reranking, and contextualization each add both. Record them alongside the quality numbers so the tradeoff is visible rather than assumed.
+
+Metric definitions, thresholds, and the harness: `evals-before-shipping/references/rag-suite.md`. Worked before-and-after examples of three of these changes: [references/worked-examples.md](references/worked-examples.md).
+
+If none of these move, the layer did not help on this corpus. Take it back out — the pipeline you can debug at 3am is worth more than the one with every layer enabled.
+
 ## References
 
 - [references/rag-vs-tools.md](references/rag-vs-tools.md) — mechanism selection, direct context, structured data
@@ -299,3 +354,4 @@ Details: [references/evaluation.md](references/evaluation.md). Use the `evals-be
 - [references/query-rewriting.md](references/query-rewriting.md) — rewriting, decomposition, expansion, evaluation
 - [references/vector-store-selection.md](references/vector-store-selection.md) — pgvector, HNSW/IVFFlat, scale, hybrid indexing
 - [references/evaluation.md](references/evaluation.md) — retriever vs generator metrics, strategy comparison
+- [references/worked-examples.md](references/worked-examples.md) — three baseline-to-fix walkthroughs with the measurement that justified each

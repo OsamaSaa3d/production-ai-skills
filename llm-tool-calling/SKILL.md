@@ -1,6 +1,7 @@
 ---
 name: llm-tool-calling
-description: Use this skill whenever you are writing code that calls an LLM and needs the model to invoke functions, call tools, take actions, or trigger external operations. This includes any code using OpenAI, Anthropic, Azure OpenAI, vLLM, Together, Groq, Ollama, or any OpenAI-compatible endpoint. Use this skill even when the user asks for an "agent" or an "AI assistant that can do X" — most agent implementations are tool calling in a loop, and you should reach for native tool calling before any framework abstraction. Use this skill even for simple cases like "let the model query a database" or "let the model send an email." Do not use LangChain, LlamaIndex, Instructor, or similar wrappers for tool calling unless the user has explicitly asked for them by name.
+description: Use whenever code calls an LLM and needs the model to invoke functions, call tools, take actions, or trigger external operations — on any provider or OpenAI-compatible endpoint. Use it even when the user asks for an "agent" or an "assistant that can do X": most agents are tool calling in a loop, and native tool calling comes before any framework abstraction. Use it for cases as simple as "let the model query a database." Do not use LangChain, LlamaIndex, or Instructor unless asked for by name.
+version: 1.0
 ---
 
 # LLM Tool Calling Without Frameworks
@@ -20,6 +21,43 @@ Two things follow from this, and both matter:
 **Enforcement covers structure, not content.** The provider constrains the *shape* of the output — types, required fields, enum membership, nesting. It does not reliably constrain *values* — numeric ranges, string lengths, regex patterns. Validate those in your own code.
 
 Write the call directly against the API. The framework abstractions exist because tool calling used to be hard before providers added it natively. It is no longer hard.
+
+## Avoid / Prefer
+
+| Avoid | Prefer |
+|---|---|
+| Tool calls parsed out of model text | Native tool calling |
+| A framework agent abstraction | The provider API directly |
+| An omitted `strict` flag | An explicit `strict: true` |
+| Value constraints trusted to the schema | Your own check after the call returns |
+| A catalog past roughly 20 tools | Dispatchers, or per-request filtering |
+| Tool exceptions that raise | Structured errors returned as the tool result |
+| A forced tool call on conversational turns | Letting the model decide |
+
+These are defaults, not laws; the rest of this file covers the complexity limits that justify turning `strict` off, and the few cases where a framework is worth its debt.
+
+## Minimal pattern
+
+```text
+The model needs to invoke a function
+    |
+    v
+Declare the tool in the request payload with strict: true
+    |
+    v
+Execute it; return errors as data, never as a traceback
+    |
+    v
+Check the stop reason, then validate values the schema cannot enforce
+    |
+    v
+Append the result as a tool-role message and call again
+    |
+    v
+Add a loop, a dispatcher, or a framework only when evals demand it
+```
+
+Everything below is the deep dive: when each step is wrong, and what to do instead.
 
 ## When to use this skill
 
@@ -239,6 +277,20 @@ Turning `strict: true` off is justified when:
 - You need a JSON Schema feature that strict mode rejects, and the structural guarantee matters less than the expressiveness.
 
 Outside these cases, write the call directly and turn strict mode on.
+
+## Success criteria
+
+Native tool calling and strict mode are claims about reliability, so they should show up as numbers:
+
+- **Tool-selection correctness**, including the should-not-call direction — the suite for this is `evals-before-shipping/references/tool-call-suite.md`
+- **Argument correctness**: the rate of missing, malformed, or wrong-schema arguments, which strict mode should drive to zero for structural errors
+- **Hallucinated tool names**, which under strict mode is a bug rather than a rate
+- **Value-constraint violations caught by your own validation** — a non-zero count is the evidence that the schema was never enforcing them
+- **Unhandled refusals and truncations**: runs that crashed or silently parsed a partial payload instead of checking the stop reason
+- **Tool calls per completed task**, which is where an oversized catalog and a vague description show up before anything else fails
+- **Tool-result tokens per task**, since oversized payloads are paid for on every subsequent turn
+
+If none of these move after you switch off a prompt-parsed or framework-wrapped implementation, the rewrite did not help on that task and the old code was not your problem.
 
 ## References
 

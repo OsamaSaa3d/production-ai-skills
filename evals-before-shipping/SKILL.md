@@ -1,6 +1,7 @@
 ---
 name: evals-before-shipping
-description: Use this skill whenever you are writing tests for an LLM application, agent, or RAG pipeline — or whenever you are about to change a prompt, swap a model, add or rename a tool, or modify retrieval and need to know whether it helped. Use it when the user says an LLM system "feels worse," "seems better," or asks whether a change was an improvement. Use it when asked to check whether an agent calls the right tools, whether a RAG pipeline retrieves and grounds correctly, or whether an agent completes its task. Build the eval suite with DeepEval and run it in CI. Do not hand-roll scoring logic for things DeepEval already has a metric for.
+description: Use when writing tests for an LLM app, agent, or RAG pipeline — or before changing a prompt, swapping a model, adding or renaming a tool, or modifying retrieval, when you need to know whether it helped. Use it when someone says an LLM system "feels worse" or "seems better," or asks whether a change was an improvement. Covers tool-call correctness, retrieval and grounding, and task completion. Build the suite with DeepEval and run it in CI; do not hand-roll scoring it already has a metric for.
+version: 1.0
 ---
 
 # Eval Suites for LLM Apps
@@ -18,6 +19,44 @@ Two rules that govern everything below:
 **Cap the suite at 5 metrics** — 2-3 generic system metrics (tool correctness, faithfulness) plus 1-2 custom `GEval` criteria for your use case. More metrics means less signal, not more.
 
 **Reference-based metrics are dev-only.** `ToolCorrectnessMetric` and `ContextualRecallMetric` need ground truth, so they cannot run in production. Referenceless metrics (`AnswerRelevancyMetric`, `FaithfulnessMetric`, `ArgumentCorrectnessMetric`, `TaskCompletionMetric`) work on live traffic.
+
+## Avoid / Prefer
+
+| Avoid | Prefer |
+|---|---|
+| Hand-rolled scoring logic | A built-in metric |
+| A ten-metric suite | At most five, mostly built-in |
+| Reference-based metrics on live traffic | Referenceless metrics in production |
+| Asserted tool sequences | Outcome checks, ordering only where it matters |
+| A should-call-only test set | Should-call and should-not-call, balanced |
+| One judge scoring every dimension | One metric per dimension |
+| An uninspected score | The `.reason` read against human labels |
+| Waiting for a large test set | 20-50 cases from real failures |
+
+These are defaults, not laws; the rest of this file covers where ordering is a genuine requirement, when `flaky=True` beats deleting a metric, and when a score-only metric is the right call.
+
+## Minimal pattern
+
+```text
+Something is about to change -- prompt, model, tool, retrieval
+    |
+    v
+Pull 20-50 cases from real failures, bugs, and the support queue
+    |
+    v
+Pick at most five metrics: 2-3 built-in plus 1-2 GEval criteria
+    |
+    v
+Set each threshold from the cost of that failure, not from taste
+    |
+    v
+Wire assert_test into pytest and gate CI on the regression suite
+    |
+    v
+Ship the change only if the suite says it helped
+```
+
+Everything below is the deep dive: when each step is wrong, and what to do instead.
 
 ## Setup
 
@@ -274,6 +313,20 @@ When a capability task becomes reliably solved, move it into the regression suit
 **Reference-based metrics in production.** `ToolCorrectnessMetric` and `ContextualRecallMetric` need ground truth that live traffic doesn't have. Split your metric list by environment.
 
 **Waiting for a big test set.** 20-50 cases pulled from real failures, your bug tracker, and your support queue is enough to start. The suite gets harder to build the longer you wait.
+
+## Success criteria
+
+A suite is itself a thing that can be wrong, so hold it to the same standard it imposes on the app:
+
+- **Regression-suite pass rate near 100%, and a build that actually fails when it drops** — see `references/ci-integration.md`
+- **Capability-suite pass rate climbing over releases**, with solved tasks migrating into the regression suite
+- **Share of prompt, model, tool, and retrieval changes merged with a suite run attached** rather than a judgement about how it feels
+- **Judge agreement with human labels** on a sampled subset, re-checked when you change the judge: `references/custom-metrics.md`
+- **Balance of should-not-call to should-call cases** in the tool suite: `references/tool-call-suite.md`
+- **Retriever and generator scores tracked separately**, so a wrong answer names its half: `references/rag-suite.md`
+- **Suite wall-clock time and judge spend**, low enough that people run it before pushing rather than after
+
+If none of these move, you have a dashboard rather than a test suite — and an LLM app whose suite nobody trusts or runs is back to having no tests.
 
 ## References
 

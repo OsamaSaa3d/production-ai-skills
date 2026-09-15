@@ -1,6 +1,7 @@
 ---
 name: structured-output
-description: Use this skill whenever you are writing code that needs an LLM's response itself to be structured data rather than prose — extracting fields from a document, email, invoice, or transcript; classifying text into categories; scoring or labeling content; converting unstructured input into records for a database, API, or pipeline; or generating a structured artifact like a config or a plan. This includes any code using OpenAI, Anthropic, Azure OpenAI, vLLM, Together, Groq, Ollama, or any OpenAI-compatible endpoint. Use this skill when you see code that prompts for JSON and parses the response, strips markdown fences off model output, or retries on parse failures. Do not use Instructor, LangChain output parsers, LlamaIndex output parsers, or similar wrappers unless the user has explicitly asked for them by name.
+description: Use whenever an LLM's response itself must be structured data rather than prose — extracting fields from a document, email, invoice, or transcript; classifying text; scoring or labeling content; converting unstructured input into records for a database or API; or generating a config or a plan. Use it wherever code prompts for JSON and parses the response, strips markdown fences off model output, or retries on parse failures. Do not use framework output parsers unless asked by name.
+version: 1.0
 ---
 
 # Structured Output
@@ -16,6 +17,40 @@ When you need the model's answer as structured data, pass a JSON Schema in the r
 This is a different API feature from tool calling, and it is the right one when the model is *answering you* rather than *calling something*. Both put a schema in the payload; they differ in where the structured data comes back and what it means.
 
 Structured output is not a reliability patch you bolt on. It replaces an entire category of code — the JSON extractor, the validator, the retry-on-malformed loop — with a request parameter.
+
+## Avoid / Prefer
+
+| Avoid | Prefer |
+|---|---|
+| Prompt for JSON, then parse | Schema in the request, strict mode on |
+| JSON mode (`json_object`) | JSON Schema response format |
+| A forced single tool call to get data back | The structured output feature |
+| Output-parser and retry-on-malformed wrappers | Direct parse of a conformant response |
+| Optional by omission from `required` | Nullable union, every property required |
+| Abbreviated field names | Descriptive names with descriptions |
+| Treating conformance as correctness | Evals on extraction accuracy |
+
+Every row is a default, and the sections below name the case where each one is the wrong call.
+
+## Minimal pattern
+
+```text
+Need structured JSON?
+    |
+    v
+Use native structured output
+    |
+    v
+Validate the schema
+    |
+    v
+Handle refusal / truncation
+    |
+    v
+Only add parsing if measurement shows it is necessary
+```
+
+Everything below is the deep dive: when each step is wrong, and what to do instead.
 
 ## Structured output or tool calling?
 
@@ -180,6 +215,18 @@ Both checks belong in every call site. Wrap them in a helper rather than repeati
 - **Your model doesn't support it.** Older or smaller models may lack structured output. Then you do need prompt-and-parse with validation and retry — write it explicitly rather than pulling in a framework.
 - **You need a JSON Schema feature strict mode rejects**, and the expressiveness matters more than the guarantee.
 - **Exploratory prototyping** where you don't yet know the shape.
+
+## Success criteria
+
+You applied this correctly if these move on the same labelled set, measured before and after:
+
+- **Parse-failure rate.** Fence-stripping, `JSONDecodeError`, and regex-extraction fallbacks should go to zero. If they don't, strict mode is being rejected or silently downgraded somewhere.
+- **Field-level extraction accuracy** against hand-labelled ground truth — the number strict mode does *not* move, and the one that decides whether the feature actually works. One criterion per field group rather than one blended score: `evals-before-shipping/references/custom-metrics.md`.
+- **Invented-value rate on absent fields** — the share of records where a field missing from the source came back non-null. Making genuinely optional fields nullable should drive this down; a schema that requires everything hides it.
+- **Unhandled refusal and truncation counts in production logs.** Both should be zero, because both should now be explicit branches rather than uncaught exceptions.
+- **Tokens and latency per successfully extracted record.** Deleting the retry loop reduces both; building schemas per request quietly gives it back through grammar-cache misses.
+
+If none of these move, the rewrite bought nothing on that task — the old parser was not the bottleneck, and the accuracy problem is somewhere else.
 
 ## References
 

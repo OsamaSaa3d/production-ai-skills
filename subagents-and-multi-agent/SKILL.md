@@ -1,6 +1,7 @@
 ---
 name: subagents-and-multi-agent
-description: Use this skill when someone proposes splitting an LLM system into multiple agents — a "multi-agent system," a "crew," a supervisor plus workers, a planner and an executor, or specialist agents per domain. Use it when an agent is running out of context, when tool results or file reads are flooding the transcript, when independent subtasks could run in parallel, or when different parts of a task need different tool permissions. Use it to decide between one agent, one agent with subagents, and genuinely separate coordinating agents. Read agent-vs-workflow-decision first if it is not yet settled that an agent is warranted at all.
+description: Use when someone proposes splitting an LLM system into multiple agents — a "multi-agent system," a "crew," a supervisor plus workers, a planner and an executor, or specialist agents per domain. Use it when an agent is running out of context, when tool results or file reads are flooding the transcript, when independent subtasks could run in parallel, or when parts of a task need different tool permissions. Decides between one agent, one agent with subagents, and separate coordinating agents.
+version: 1.0
 ---
 
 # Subagents and Multi-Agent Systems
@@ -16,6 +17,46 @@ Most systems described as "multi-agent" should be **one agent that spawns subage
 A subagent is a fresh agent instance spawned by a parent within the same session. It gets its own context window, its own system prompt, its own tool subset, and optionally its own model. It does a bounded task and returns **only its final message** to the parent. Intermediate tool calls, file reads, and reasoning stay inside it.
 
 That last property is the whole point. Subagents are primarily a **context isolation** mechanism, not an intelligence mechanism. You are not making the system smarter by adding agents; you are keeping the parent's transcript clean.
+
+## Avoid / Prefer
+
+| Avoid | Prefer |
+|---|---|
+| Separate coordinating agents | One agent spawning subagents |
+| More agents to reduce tool count | Tool search and deferred definitions on one agent |
+| A crew of roles sharing one context | Subagents with genuinely isolated context |
+| "Fix the bug we discussed" | Paths, IDs, and errors written into the delegation prompt |
+| Low-compression delegation | Bounded tasks with much input and little output |
+| Subagents left on the parent's model | A cheaper tier for bounded work |
+| Unattended runs with no ceiling | Depth, concurrency, and budget caps set together |
+
+Each row is a default; the sections below give the case where it is the wrong call.
+
+## Minimal pattern
+
+```text
+One agent hitting a wall?
+    |
+    v
+Fix it inside the single agent first
+    |
+    v
+Still blocked on context, parallelism, or permissions?
+    |
+    v
+Spawn a bounded subagent with its own tool subset and model
+    |
+    v
+Put every path, ID, and decision in the delegation prompt
+    |
+    v
+Cap depth, concurrency, and budget
+    |
+    v
+Measure compression and delegation accuracy before adding another
+```
+
+Everything below is the deep dive: when each step is wrong, and what to do instead.
 
 ## What changed: two classic reasons no longer apply
 
@@ -195,6 +236,19 @@ Costs compound badly. A subagent that recursively spawns more subagents, or a to
 **Vague `description` fields.** The parent decides delegation from the description, exactly as it decides tool calls from tool descriptions. Same rules apply — see `tool-design`. If the parent isn't delegating, the description is usually why; naming the subagent explicitly in the prompt bypasses matching and confirms the diagnosis.
 
 **No evals on the delegation decision.** Whether the parent delegates to the right subagent is a tool-selection problem and is measurable the same way. See `evals-before-shipping`.
+
+## Success criteria
+
+Adding agents is supposed to buy context, time, or safety. Measure which one, on the same task set, before and after:
+
+- **Parent-transcript tokens per task.** This is the primary thing a subagent buys. If the parent's context is not smaller, the isolation did nothing.
+- **Compression ratio per subagent** — tokens consumed inside it against tokens returned to the parent. A ratio near 1 means you paid for an extra instance to move data; that subagent should be a direct call.
+- **Wall-clock time per task** on work with genuinely independent subtasks. Parallelism that doesn't shorten the run wasn't parallel.
+- **Delegation accuracy** — how often the parent invokes the right subagent for the task. It is a tool-selection problem and scores the same way: `evals-before-shipping/references/tool-call-suite.md`.
+- **Total cost per task, including every subagent's tokens.** The orchestrator's own bill goes down while the total can go up several fold; only the total is the decision.
+- **Restricted-tool violations** — attempted writes by a read-only subagent. Should be structurally zero. A non-zero count means the restriction is prose in a prompt rather than an omission from the tool set.
+
+If none of these move, the split added coordination failure modes and bought nothing. Collapse it back into one agent.
 
 ## References
 

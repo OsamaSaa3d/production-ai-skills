@@ -1,6 +1,7 @@
 ---
 name: agent-vs-workflow-decision
-description: Use this skill before writing any code when the user asks for an "agent," "AI assistant," "copilot," "autonomous system," "multi-agent system," or any LLM system that performs a multi-step task. Use it when the user describes a process they want automated with an LLM, when existing code has an agent loop you are extending, or when someone proposes adding a second agent, a supervisor, a planner, or a "crew" to an existing system. This skill decides the architecture — single call, workflow, or agent — before any implementation choices are made. Apply it even when the user has already said the word "agent," because the request usually describes a workflow.
+description: Use before writing code when the user asks for an "agent," "AI assistant," "copilot," "autonomous system," "multi-agent system," or any multi-step LLM system. Use it when a process should be automated with an LLM, when extending existing agent-loop code, or when someone proposes a second agent, a supervisor, or a "crew." Decides the architecture — single call, workflow, or agent — before implementation. Apply it even when the user already said "agent": the request usually describes a workflow.
+version: 1.0
 ---
 
 # Choosing Between a Single Call, a Workflow, and an Agent
@@ -19,6 +20,43 @@ The architectural distinction that matters:
 - **Agent** — the LLM dynamically directs its own process and tool usage, deciding what to do next from environment feedback. *You* own the goal, the tools, and the guardrails; the model owns the path.
 
 Agentic systems trade latency and cost for task performance. That trade is worth making sometimes. It is not worth making by default, and "the user said the word agent" is not evidence that it is.
+
+## Avoid / Prefer
+
+| Avoid | Prefer |
+|---|---|
+| An agent over a fixed procedure | A workflow with the steps in your code |
+| Multi-agent for interdependent subtasks | An orchestrator-workers workflow |
+| Role-play personas sharing one context | One call with a better prompt |
+| A framework as the starting point | Direct API calls |
+| An agent as a fix for a wrong answer | Better prompt, retrieval, examples |
+| An autonomy loop for a knowledge gap | A skill, loaded context, or tools |
+| An unbounded loop | Iteration and per-run budget ceilings |
+
+These are defaults, not laws; the rest of this file explains what each rung costs and when the more complex side is the right call.
+
+## Minimal pattern
+
+```text
+Can you write the steps down?
+    |
+    v
+Yes -- write them down: that is a workflow, in your code
+    |
+    v
+No -- does the environment give ground truth at each step?
+    |
+    v
+Yes -- an agent, with stopping conditions and a budget cap
+    |
+    v
+Are the subtasks independent and larger than one context window?
+    |
+    v
+Only then multi-agent, and only once evals beat the workflow
+```
+
+Everything below is the deep dive: when each step is wrong, and what to do instead.
 
 ## The escalation ladder
 
@@ -149,6 +187,19 @@ Concretely:
 - **Prototyping to learn the problem shape.** Build the agent, watch what it actually does, then collapse it into the workflow you now know you needed.
 - **The task genuinely is open-ended** and you have verifiable output and a safe environment. Then take the cost.
 - **A framework is already load-bearing** in the codebase and removing it costs more than keeping it.
+
+## Success criteria
+
+The architecture choice is a hypothesis. These are the numbers that say whether the rung you picked was the right one, measured against the simpler rung you rejected:
+
+- **Task completion rate** on the same golden set, run against both architectures — the trajectory metrics in `evals-before-shipping/references/tracing-setup.md` are the ones that read a whole run rather than a single answer
+- **Tokens and dollars per successful task**, retries included, against the 4x and 15x multipliers this file quotes
+- **Steps per task and redundant-step count** — an agent rediscovering a fixed procedure shows up here first
+- **p50 and p95 latency per task**, since latency is half of what an agent trades away
+- **Share of runs hitting the iteration cap or budget ceiling** — a high number means stuck runs are your normal case, not an exotic one
+- **Share of steps backed by an environment signal** rather than the model's own assertion
+
+If task completion does not move while cost and latency do, the extra rung did not earn its place — collapse it. Unmeasured architecture is decoration.
 
 ## References
 

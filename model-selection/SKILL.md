@@ -1,6 +1,7 @@
 ---
 name: model-selection
-description: Use this skill when choosing which model to call, when hardcoding a model string in new code, when costs are too high, when someone asks whether a cheaper or smaller model would work, or when routing different request types to different models. Use it when working against OpenRouter or any provider exposing a /models endpoint, and when a system calls one large model for every request regardless of difficulty. Covers capability gating via supported_parameters, cost-per-task math, and eval-driven escalation from small models to large ones.
+description: Use when choosing which model to call, when hardcoding a model string in new code, when costs are too high, when someone asks whether a cheaper or smaller model would work, or when routing different request types to different models. Use it against any provider exposing a /models endpoint, and when a system calls one large model for every request regardless of difficulty. Covers capability gating, cost-per-task math, and eval-driven escalation from small models to large.
+version: 1.0
 ---
 
 # Model Selection
@@ -16,6 +17,43 @@ description: Use this skill when choosing which model to call, when hardcoding a
 This order exists because you cannot optimize toward a bar you haven't established. Starting cheap means you can't tell whether a failure is the model, the prompt, the tools, or a task that no model can do as specified. Starting strong separates those: once the strongest model passes, every later failure is a cost-optimization problem with a known-good reference to compare against.
 
 Two things to never do regardless of phase: **pick a model by price alone** (price says nothing about whether it supports strict tool calling, structured outputs, or your context length), and **route dynamically to whatever is cheapest right now** (you will silently ship an unevaluated model).
+
+## Avoid / Prefer
+
+| Avoid | Prefer |
+|---|---|
+| Price as the first filter | The capability gate, then cost |
+| Cost per token | Cost per successful task |
+| Development starting on a cheap model | The strongest model as the reference |
+| Escalating on the first failure | Sharper descriptions and examples first |
+| Cheapest-right-now routing | A pinned model ID, reviewed on a schedule |
+| One model for every request | Routing by request class |
+| Assuming a small model will fail | Running the suite on it |
+
+These are defaults, not laws; the rest of this file covers how far below the reference a cheaper model may sit, and when escalation is the honest answer rather than the lazy one.
+
+## Minimal pattern
+
+```text
+Set an accuracy target from what an error actually costs
+    |
+    v
+Hit it on the strongest model; pin that as the reference
+    |
+    v
+Gate candidates on supported parameters and context length
+    |
+    v
+Rank the survivors by cost per successful task
+    |
+    v
+Run the unchanged suite on the cheapest; fix the interface before escalating
+    |
+    v
+Pin whichever model still clears the target
+```
+
+Everything below is the deep dive: when each step is wrong, and what to do instead.
 
 ## The two phases
 
@@ -223,6 +261,20 @@ Model IDs also carry provider and quantization differences behind one name. Wher
 **Assuming a small model fails before testing it.** This is as unmeasured as assuming it will pass. Most production calls are classification, extraction, and formatting — run the suite before paying for a large model on those.
 
 **One model for everything.** Route by request class. The difference is usually large and almost free to implement.
+
+## Success criteria
+
+Model selection is the one decision in this repo with a number attached by construction. Check that the number moved in the direction you claimed:
+
+- **Pass rate on the unchanged Phase 1 suite** for the pinned model, reported against both the target and the reference model's rate — re-run on every pin change, which is what `evals-before-shipping/references/ci-integration.md` is for
+- **Cost per successful task**, with retries and reasoning tokens counted, not per-token price
+- **Share of traffic served by the cheaper tier** without a pass-rate drop, which is the payoff from routing
+- **Requests sent to a model lacking a parameter your code depends on** — this should be zero, including through fallback chains
+- **Tool-selection accuracy on the small model specifically**, because that is where it degrades first: `evals-before-shipping/references/tool-call-suite.md`
+- **p50 and p95 latency per request class** after routing, since the small tier is usually bought for both
+- **Eval failures fixed by sharpening the interface rather than escalating** — a high count means ambiguity was being paid for per request
+
+If none of these move, the pin you changed to did not help on that task; revert to the reference and keep the interface improvements, which are free. A cost saving you cannot show alongside an unchanged pass rate is not a saving.
 
 ## References
 

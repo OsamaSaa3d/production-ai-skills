@@ -19,7 +19,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
-DESCRIPTION_MAX = 1024
+
+# Both limits are the tightest across the agents these skills claim to support,
+# not the most generous. Codex caps description at 500; Cursor and Copilot cap
+# name at 64. Exceeding a limit does not raise an error at install time — the
+# agent drops the skill and says nothing, so it is installed, looks fine, and
+# never fires. Since the description is the only thing an agent sees before
+# deciding to load a skill, that failure is silent and total. Hence a hard check.
+DESCRIPTION_MAX = 500
 NAME_MAX = 64
 
 # Reference-style links in either style the repo uses:
@@ -62,25 +69,44 @@ API_SURFACE_RE = re.compile(
     r"|max_tokens|stop_reason|finish_reason"
 )
 
-errors: list[str] = []
-warnings: list[str] = []
+# Every finding is filed under one of these so a clean run can report which
+# classes of check actually passed, rather than a bare count that proves nothing.
+FRONTMATTER = "frontmatter"
+NAMING = "skill naming"
+LOCAL_REFS = "local references"
+CROSS_REFS = "cross-skill references"
+NEUTRALITY = "provider neutrality"
+VERIFY = "API-surface verify banners"
+FENCES = "code-fence integrity"
+CHECK_CLASSES = (
+    FRONTMATTER,
+    NAMING,
+    LOCAL_REFS,
+    CROSS_REFS,
+    NEUTRALITY,
+    VERIFY,
+    FENCES,
+)
+
+errors: list[tuple[str, str]] = []
+warnings: list[tuple[str, str]] = []
 
 
-def err(path: Path, msg: str) -> None:
-    errors.append(f"{path.relative_to(ROOT)}: {msg}")
+def err(cls: str, path: Path, msg: str) -> None:
+    errors.append((cls, f"{path.relative_to(ROOT)}: {msg}"))
 
 
-def warn(path: Path, msg: str) -> None:
-    warnings.append(f"{path.relative_to(ROOT)}: {msg}")
+def warn(cls: str, path: Path, msg: str) -> None:
+    warnings.append((cls, f"{path.relative_to(ROOT)}: {msg}"))
 
 
 def parse_frontmatter(path: Path, text: str) -> dict[str, str] | None:
     if not text.startswith("---\n"):
-        err(path, "missing YAML frontmatter (file must start with '---')")
+        err(FRONTMATTER, path, "missing YAML frontmatter (file must start with '---')")
         return None
     end = text.find("\n---\n", 3)
     if end == -1:
-        err(path, "frontmatter is not closed with '---'")
+        err(FRONTMATTER, path, "frontmatter is not closed with '---'")
         return None
     fields: dict[str, str] = {}
     key = None
@@ -101,24 +127,24 @@ def check_frontmatter(skill_dir: Path, skill_md: Path, text: str) -> None:
 
     for required in ("name", "description"):
         if required not in fields or not fields[required]:
-            err(skill_md, f"frontmatter is missing a non-empty '{required}'")
+            err(FRONTMATTER, skill_md, f"frontmatter is missing a non-empty '{required}'")
 
     name = fields.get("name", "")
     if name:
         if name != skill_dir.name:
-            err(skill_md, f"frontmatter name {name!r} != directory {skill_dir.name!r}")
+            err(NAMING, skill_md, f"frontmatter name {name!r} != directory {skill_dir.name!r}")
         if not NAME_RE.match(name):
-            err(skill_md, f"name {name!r} must be lowercase alphanumeric with single hyphens")
+            err(NAMING, skill_md, f"name {name!r} must be lowercase alphanumeric with single hyphens")
         if len(name) > NAME_MAX:
-            err(skill_md, f"name is {len(name)} chars (max {NAME_MAX})")
+            err(NAMING, skill_md, f"name is {len(name)} chars (max {NAME_MAX})")
 
     desc = fields.get("description", "")
     if desc and len(desc) > DESCRIPTION_MAX:
-        err(skill_md, f"description is {len(desc)} chars (max {DESCRIPTION_MAX})")
+        err(FRONTMATTER, skill_md, f"description is {len(desc)} chars (max {DESCRIPTION_MAX})")
 
     unexpected = set(fields) - {"name", "description", "license", "allowed-tools", "version"}
     if unexpected:
-        warn(skill_md, f"unrecognized frontmatter keys: {sorted(unexpected)}")
+        warn(FRONTMATTER, skill_md, f"unrecognized frontmatter keys: {sorted(unexpected)}")
 
 
 def check_links(md: Path, skill_dir: Path, skill_names: set[str]) -> None:
@@ -129,12 +155,13 @@ def check_links(md: Path, skill_dir: Path, skill_names: set[str]) -> None:
         if other not in skill_names:
             continue  # not a cross-skill path, e.g. a directory in prose
         if not (ROOT / other / "references" / ref).is_file():
-            err(md, f"cross-skill reference does not exist: {other}/references/{ref}")
+            err(CROSS_REFS, md, f"cross-skill reference does not exist: {other}/references/{ref}")
 
     for other, ref in POSSESSIVE_REF_RE.findall(text):
         err(
+            CROSS_REFS,
             md,
-            f"cross-skill reference written as `{other}`'s `references/{ref}` — an "
+            f"cross-skill reference written as `{other}`'s `references/{ref}` - an "
             f"agent resolves that against its own directory; write "
             f"`{other}/references/{ref}`",
         )
@@ -143,14 +170,15 @@ def check_links(md: Path, skill_dir: Path, skill_names: set[str]) -> None:
     local_text = CROSS_REF_RE.sub("", text)
     for ref in set(LOCAL_REF_RE.findall(local_text)):
         if not (skill_dir / "references" / ref).is_file():
-            err(md, f"reference does not exist: references/{ref}")
+            err(LOCAL_REFS, md, f"reference does not exist: references/{ref}")
 
 
 def check_conventions(md: Path, text: str, is_skill_root: bool) -> None:
     for model in sorted(set(VENDOR_MODEL_RE.findall(text))):
         err(
+            NEUTRALITY,
             md,
-            f"hardcoded vendor model id {model!r} — skills are provider-neutral; "
+            f"hardcoded vendor model id {model!r} - skills are provider-neutral; "
             f"use a MODEL placeholder instead",
         )
 
@@ -162,16 +190,21 @@ def check_conventions(md: Path, text: str, is_skill_root: bool) -> None:
             ast.parse(block)
         except SyntaxError:
             err(
+                FENCES,
                 md,
-                f"a ```python fence contains {glyph.group()!r} and does not parse — "
+                # ascii(): the offending glyph is by definition outside cp1252's
+                # comfort zone, and a UnicodeEncodeError while reporting a lint
+                # error would bury the lint error.
+                f"a ```python fence contains {ascii(glyph.group())} and does not parse - "
                 f"it is a diagram or table, not code; tag it ```text",
             )
 
     if is_skill_root or API_SURFACE_RE.search(text):
         if VERIFY_MARKER not in text:
             err(
+                VERIFY,
                 md,
-                f"names an API surface but has no {VERIFY_MARKER!r} banner — "
+                f"names an API surface but has no {VERIFY_MARKER!r} banner - "
                 f"add one so the agent checks the live contract",
             )
 
@@ -183,7 +216,7 @@ def main() -> int:
         p.parent for p in ROOT.glob("*/SKILL.md") if not p.parent.name.startswith(".")
     )
     if not skill_dirs:
-        print("no skills found — expected <skill-name>/SKILL.md at the repo root")
+        print("no skills found - expected <skill-name>/SKILL.md at the repo root")
         return 1
 
     skill_names = {d.name for d in skill_dirs}
@@ -191,7 +224,7 @@ def main() -> int:
     # A directory with references/ but no SKILL.md is a mistake.
     for refs in ROOT.glob("*/references"):
         if refs.parent.name not in skill_names and not refs.parent.name.startswith("."):
-            err(refs, "references/ directory with no SKILL.md beside it")
+            err(LOCAL_REFS, refs, "references/ directory with no SKILL.md beside it")
 
     for skill_dir in skill_dirs:
         skill_md = skill_dir / "SKILL.md"
@@ -215,19 +248,42 @@ def main() -> int:
 
         for md in sorted(refs_dir.glob("*.md")):
             if md.name not in linked:
-                warn(md, "not linked from its SKILL.md — it will never be discovered")
+                warn(LOCAL_REFS, md, "not linked from its SKILL.md - it will never be discovered")
 
-    for w in warnings:
-        print(f"warning: {w}")
-    for e in errors:
-        print(f"error: {e}")
+    summary = (
+        f"{len(skill_dirs)} skills checked - "
+        f"{len(errors)} error(s), {len(warnings)} warning(s)"
+    )
 
-    if not quiet or errors:
-        print()
-        print(
-            f"{len(skill_dirs)} skills checked — "
-            f"{len(errors)} error(s), {len(warnings)} warning(s)"
-        )
+    if quiet:
+        for _, w in warnings:
+            print(f"warning: {w}")
+        for _, e in errors:
+            print(f"error: {e}")
+        if errors:
+            print()
+            print(summary)
+        return 1 if errors else 0
+
+    print("Production AI Skills - skill validation")
+    print()
+    # Anything filed under a class this file does not declare is a bug in the
+    # filing, not a reason to drop the finding on the floor.
+    classes = list(CHECK_CLASSES) + [
+        c for c, _ in errors + warnings if c not in CHECK_CLASSES
+    ]
+    for cls in dict.fromkeys(classes):
+        errs = [m for c, m in errors if c == cls]
+        warns = [m for c, m in warnings if c == cls]
+        status = "FAIL" if errs else "warn" if warns else "ok"
+        print(f"  {status:<6}{cls}")
+        for m in errs:
+            print(f"        error: {m}")
+        for m in warns:
+            print(f"        warning: {m}")
+
+    print()
+    print(summary)
     return 1 if errors else 0
 
 
