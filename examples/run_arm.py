@@ -185,7 +185,10 @@ def run_one(base, arm, task, run, model, effort, timeout):
         return dict(ok=False, tid=tid, run=run, why=f"timeout after {timeout}s")
     parsed = parse_stream(out.splitlines())
     if not parsed["result"].strip():
-        return dict(ok=False, tid=tid, run=run, why=f"empty result; stderr={err[-500:]}")
+        tail = " ".join(l for l in out.splitlines()[-3:])[-300:]
+        limited = "limit" in out.lower() and parsed["turns"] in (None, 0, 1)
+        return dict(ok=False, tid=tid, run=run, limited=limited,
+                    why=f"empty result; stdout tail={tail!r} stderr={err[-300:]!r}")
     parsed.update(ok=True, tid=tid, run=run, dir=d,
                   answer=parsed["result"] + collect_files(d))
     return parsed
@@ -242,10 +245,18 @@ def main() -> int:
         futs = [ex.submit(run_one, base, args.arm, t, k, args.model, args.effort, args.timeout)
                 for t, k in jobs]
         for f in cf.as_completed(futs):
+            if f.cancelled():
+                continue
             r = f.result()
             if not r["ok"]:
                 print(f"  FAILED {r['tid']} run{r['run']}: {r['why']}")
                 failures.append(r)
+                # A usage limit fails every queued run instantly. Stop instead of
+                # draining the queue; re-running the script resumes from the manifest.
+                if r.get("limited"):
+                    print("  usage limit hit: cancelling queued runs")
+                    for pending in futs:
+                        pending.cancel()
                 continue
             record(args.arm, r, pathlib.Path(args.scratch).expanduser().resolve())
     print(f"done. {len(failures)} failure(s)")
