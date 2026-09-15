@@ -15,8 +15,10 @@ reproducible. For each (task, run):
   - the answer is the session's final message, plus the contents of any files
     it wrote into its directory (sessions often write the code to disk and
     reply with a summary; grading only the summary would grade the wrong thing).
-  - which repo skill fired is read from the transcript: a Skill tool call
-    naming one of the ten, or a Read of its SKILL.md.
+  - which repo skills fired is read from the transcript: a Skill tool call
+    naming one of the ten, or a Read of its SKILL.md. Every one is recorded, not
+    just the first — with all ten installed, a second skill firing alongside the
+    right one is a result rather than noise.
   - the run is recorded with record.py.
 
 Runs already in the manifest are skipped, so the script is resumable.
@@ -180,7 +182,8 @@ def record(arm, r, scratch: pathlib.Path) -> None:
     cmd = [sys.executable, str(ROOT / "record.py"), "--arm", arm, "--task", r["tid"],
            "--run", str(r["run"]), "--answer-file", str(ans), "--transcript-file", str(tr),
            "--model", r["model"] or "unknown", "--tools-used", ",".join(r["tools"]),
-           "--skill-triggered", r["fired"][0] if r["fired"] else ""]
+           "--skill-triggered", r["fired"][0] if r["fired"] else "",
+           "--skills-triggered", ",".join(r["fired"])]
     if r["turns"] is not None:
         cmd += ["--turns", str(r["turns"])]
     if r["in_tok"] is not None:

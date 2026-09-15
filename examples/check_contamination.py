@@ -19,6 +19,8 @@ import json, pathlib, re, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent
 REPO = ROOT.parent
+sys.path.insert(0, str(ROOT))
+from triggering import fired_skills  # noqa: E402  reads both manifest field shapes
 
 SKILL_NAMES = sorted(p.parent.name for p in REPO.glob("*/SKILL.md"))
 
@@ -39,7 +41,7 @@ def load(arm: str) -> list[dict]:
     mf = ROOT / "runs" / f"manifest_{arm}.jsonl"
     if not mf.exists():
         return []
-    return [json.loads(l) for l in mf.read_text().splitlines() if l.strip()]
+    return [json.loads(l) for l in mf.read_text(encoding="utf-8").splitlines() if l.strip()]
 
 
 def main() -> int:
@@ -59,7 +61,9 @@ def main() -> int:
             p = sub / row["file"]
             if not p.exists():
                 continue
-            text = p.read_text()
+            # Transcripts carry whatever the session printed. The platform default
+            # encoding would throw on a box-drawing character and abort the control.
+            text = p.read_text(encoding="utf-8", errors="replace")
             if name_re.search(text):
                 hits.add(f"{label}: names a skill directory")
             if tell_re.search(text):
@@ -73,7 +77,7 @@ def main() -> int:
         for h in hits:
             print(f"      {h}")
 
-    triggered = [r for r in b_rows if r.get("skill_triggered")]
+    triggered = [r for r in b_rows if fired_skills(r)]
     if b_rows:
         pct = 100 * len(triggered) / len(b_rows)
         print(f"\narm B runs: {len(b_rows)}   skill fired in {len(triggered)} ({pct:.0f}%)")

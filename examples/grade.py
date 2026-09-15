@@ -18,7 +18,7 @@ from tasks import BY_ID  # noqa: E402
 def load_manifest() -> list[dict]:
     rows = []
     for mf in sorted((ROOT / "runs").glob("manifest_*.jsonl")):
-        rows += [json.loads(l) for l in mf.read_text().splitlines() if l.strip()]
+        rows += [json.loads(l) for l in mf.read_text(encoding="utf-8").splitlines() if l.strip()]
     return rows
 
 
@@ -35,7 +35,7 @@ def main() -> int:
         path = ROOT / "runs" / row["arm"] / row["file"]
         if not path.exists():
             print(f"missing {path}", file=sys.stderr); continue
-        answer = path.read_text()
+        answer = path.read_text(encoding="utf-8", errors="replace")
         g = rubrics.grade(row["task"], answer)       # arm not passed in
         t = BY_ID[row["task"]]
         for name, c in g["checks"].items():

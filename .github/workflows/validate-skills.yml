@@ -26,3 +26,14 @@ jobs:
 
       - name: Validate eval graders against their fixtures
         run: python3 examples/validate_graders.py
+
+      - name: Validate eval reporting against synthetic manifests
+        run: python3 examples/validate_report.py
+
+      # The README's self-metrics are generated from this script, so a broken
+      # generator is a README that quietly goes stale.
+      - name: Report project stats
+        run: python3 scripts/stats.py
+
+      - name: Syntax-check the installer
+        run: sh -n scripts/install.sh

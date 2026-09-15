@@ -1,4 +1,13 @@
 # Generated outputs land here. Committed deliberately after a run, not before.
-runs/*/*.md
+# `**` rather than `*` because run_arm.py writes answers to runs/{arm}/ and
+# transcripts to runs/transcripts/{arm}/ — one level deeper, which a single-star
+# pattern misses, which is how a partial run's raw transcripts nearly got
+# committed before there was anything to compare them against.
+runs/**/*.md
 runs/manifest_*.jsonl
 results.tsv
+
+# RESULTS.md and TRIGGERING.md are deliberately NOT ignored: once there are real
+# numbers the write-up is the deliverable, and the top-level README links to it.
+# Generate them from real manifests only — report.py and trigger_benchmark.py both
+# take --out so a test or a partial run can write somewhere harmless instead.

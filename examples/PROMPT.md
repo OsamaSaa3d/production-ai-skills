@@ -16,6 +16,7 @@ commitments. Do not weaken any of them.
 ```bash
 python3 scripts/lint_skills.py          # must exit 0
 python3 examples/validate_graders.py    # must exit 0 — all 16 rubrics separate
+python3 examples/validate_report.py     # must exit 0 — reporting survives n=0/1/3
 ```
 
 If either fails, stop and fix it. Generating against a broken grader wastes the runs.
@@ -97,9 +98,15 @@ null result then is a finding about the descriptions, not the content.
 ## Step 4 — grade and report
 
 ```bash
-python3 examples/grade.py     # blind; writes results.tsv
-python3 examples/report.py    # writes RESULTS.md
+python3 examples/grade.py              # blind; writes results.tsv
+python3 examples/report.py             # writes RESULTS.md
+python3 examples/trigger_benchmark.py  # writes TRIGGERING.md
 ```
+
+`report.py` reports the bootstrap interval, the effect sizes and the win/tie/loss
+counts itself, and refuses to print an interval it cannot support. Do not replace
+those numbers with hand-computed ones, and do not quote a mean delta without the
+interval next to it.
 
 Then read the failures. **Do not tune a grader to improve a score.** If a check is
 genuinely wrong — a false positive on a correct answer — fix the check, note the fix
@@ -114,7 +121,9 @@ stranger can act on:
 1. **Per-task table** — already generated. Never replace it with an aggregate.
 2. **By kind** — positives, traps, controls, separately. A negative delta on a control
    is the most important number in the file and belongs near the top, not buried.
-3. **Triggering** — fire rate, and arm-B means conditional on the skill firing.
+3. **Triggering** — fire rate, arm-B means conditional on the skill firing, and the
+   per-task table that separates a skill that never loaded from one that loaded and did
+   nothing. `TRIGGERING.md` scores discovery on its own; link it.
 4. **Effort** — mean turns and tool calls per arm, so a reader can judge whether arm B
    just did more work.
 5. **Threats to validity** — written honestly. Small n, session variance, any grader
