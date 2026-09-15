@@ -17,7 +17,7 @@ Coding agents are very good at producing *plausible* LLM application code.
 
 They are much less reliable at choosing the right architecture, deciding when an agent is actually necessary, designing tool boundaries, controlling context growth, or determining whether a change improved the system.
 
-Our own baseline (arm A, no skills — see [Measured, not asserted](#measured-not-asserted)) doesn't reach for `AgentExecutor` or a ReAct-and-regex parser: across 45 runs on tasks that never name a technique, `LangChain`, `LangGraph`, `AgentExecutor`, and `CrewAI` show up only in the three runs of the one task that explicitly asked for LangGraph. Framework-agnostic tool calling is the model's default now, not the failure mode.
+Our own baseline (arm A, no project-installed skills — see [Measured, not asserted](#measured-not-asserted)) doesn't reach for `AgentExecutor` or a ReAct-and-regex parser: across 45 runs on tasks that never name a technique, `LangChain`, `LangGraph`, `AgentExecutor`, and `CrewAI` show up only in the three runs of the one task that explicitly asked for LangGraph. Framework-agnostic tool calling is the model's default now, not the failure mode.
 
 What the baseline actually gets wrong is narrower, and less obvious to guard against: it reaches for the SDK's `@beta_tool` runner instead of a hand-written schema with `strict: true` and `additionalProperties: false`, skips refusal and truncation handling on structured extraction, and sometimes builds an agent loop for a task that a fixed workflow would have handled more cheaply and predictably. None of that is a framework problem. It's judgment about schemas, edge cases, and when the extra rung of architecture is worth its cost — exactly the kind of thing that doesn't show up until you look at the generated code, not the imports.
 
@@ -72,7 +72,7 @@ These skills encode engineering judgment as **progressively disclosed instructio
           ┌───────────────▼──────────────┐
           │       blind A/B eval         │
           │                              │
-          │  arm A: no skills            │
+          │  arm A: no project skills    │
           │  arm B: all skills           │
           │                              │
           │  deterministic checks        │
@@ -217,7 +217,7 @@ Verified targets:
 ./scripts/install.sh --target claude-code --user  # Claude Code
 ```
 
-One caveat worth knowing: some opencode builds load only the singular `skill/` directory. If the skills don't show up there, re-run with `--dest ~/.config/opencode/skill`. The installer's `--help` says so too.
+opencode's v2 discovers both `.opencode/skill/` (singular) and `.opencode/skills/` (plural); `~/.config/opencode/skills/` above is the preferred, current path. Confirm against opencode's own docs before relying on it — that convention has moved before and this repo's "verify before you build" rule applies to its own claims, not just the skills' code samples.
 
 Anything else — the skills are markdown. Point your harness at the directories, or paste a `SKILL.md` into a system prompt.
 
@@ -242,7 +242,7 @@ Each `SKILL.md` also opens with an **Avoid / Prefer** table and a **Minimal patt
 
 `examples/` holds a pre-registered blind A/B eval that asks the only question that matters: does installing these skills change the code a coding agent writes?
 
-Arm A gets no skills. Arm B gets all ten. Same tasks, same model, blinded filenames, deterministic checks plus a fixture-validated rubric — and control tasks where applying a skill is the *wrong* answer, so the skills can lose.
+Arm A gets no project-installed skills — no `SKILL.md` from this repo is on disk, though it's still Claude Code, which may bring its own bundled or system capabilities the eval doesn't control for. Arm B gets all ten. Same tasks, same model, blinded filenames, deterministic checks plus a fixture-validated rubric — and control tasks where applying a skill is the *wrong* answer, so the skills can lose.
 
 It reports per-task scores, win/tie/loss, bootstrap confidence intervals and effect size rather than a bare pair of averages, and it separates the two ways a skill can fail: the content was wrong, or the description never got it loaded.
 
@@ -254,7 +254,7 @@ It reports per-task scores, win/tie/loss, bootstrap confidence intervals and eff
 - **3 controls:** applying the skill *is* the mistake, like forcing a JSON schema onto a prose summary, or ripping out a framework the user said they depend on.
 
 **The runs.** Each task runs 3 times in each arm, and every run is a fresh headless Claude Code session in its own empty directory. That's 96 sessions in total.
-- **Arm A:** no skills.
+- **Arm A:** no project-installed skills.
 - **Arm B:** the same setup, with all ten skills installed.
 
 The answer graded is the session's final message plus every file it wrote.

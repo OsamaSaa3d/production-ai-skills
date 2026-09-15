@@ -45,9 +45,9 @@ Destinations (verified against vendor docs, 2026):
                (~/.codex/skills is still scanned but is the deprecated path)
   cursor       user ~/.cursor/skills            project ./.cursor/skills
   opencode     user ~/.config/opencode/skills   project ./.opencode/skills
-               (UNVERIFIED EDGE: some opencode builds only load the singular
-                'skill/' directory - if the skills do not appear, re-run with
-                --dest ~/.config/opencode/skill)
+               (opencode also discovers the singular 'skill/' directory as of
+                its v2 release, so ~/.config/opencode/skills is the preferred,
+                and current, path - verify against opencode's docs if it changes)
   copilot      user ~/.copilot/skills           project ./.github/skills
   agents       user ~/.agents/skills            project ./.agents/skills
                (cross-agent convention read by Codex, Cursor, opencode and

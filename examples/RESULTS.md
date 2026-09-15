@@ -284,7 +284,7 @@ has to take the headline on trust.
   re-captured from the untouched run directories before grading, but git history still
   contains the bloated versions.
 - **Skills changed during the run.** Commit `e470e2e` edited all ten `SKILL.md` files
-  while arm A was running. Arm A has no skills, so it's unaffected. All of arm B ran
+  while arm A was running. Arm A has no project-installed skills, so it's unaffected. All of arm B ran
   against the edited version.
 - **One model, one harness, one day.** Don't assume these results hold for other models
   or agents until the eval is run there.

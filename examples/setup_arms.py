@@ -50,7 +50,7 @@ def main() -> int:
         shutil.copytree(s, skills_dir / s.name)
 
     installed = sorted(p.name for p in skills_dir.iterdir())
-    print(f"arm A (no skills): {a}")
+    print(f"arm A (no project skills): {a}")
     print(f"   contents: {sorted(p.name for p in a.iterdir()) or 'empty'}")
     print(f"arm B (skills):    {b}")
     print(f"   contents: {sorted(p.name for p in b.iterdir())}")
