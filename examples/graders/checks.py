@@ -8,7 +8,16 @@ from __future__ import annotations
 import ast, re
 from dataclasses import dataclass
 
-FENCE = re.compile(r"```(?:python|py)?\n(.*?)```", re.S)
+# A fence is 3+ backticks and closes only on a run of the same length (CommonMark).
+# The old pattern paired fences positionally: in an answer that also contained
+# ```` md or ```` json blocks, a closing fence was read as an opening one, so real
+# code fell outside every "python" block and schemas the session wrote were
+# invisible to the AST checks.
+FENCE = re.compile(r"^(`{3,})(?:python|py)?[ \t]*\n(.*?)^\1[ \t]*$", re.S | re.M)
+
+
+def _blocks(answer: str) -> list[str]:
+    return [body for _, body in FENCE.findall(answer)]
 
 FRAMEWORKS = re.compile(
     r"\b(?:from|import)\s+(langchain\w*|langgraph|llama_index|llamaindex|instructor|crewai|autogen)\b"
@@ -17,12 +26,12 @@ FRAMEWORKS = re.compile(
 
 def code(answer: str) -> str:
     """All fenced python in the answer, concatenated."""
-    return "\n\n".join(FENCE.findall(answer))
+    return "\n\n".join(_blocks(answer))
 
 
 def trees(answer: str) -> list[ast.AST]:
     out = []
-    for block in FENCE.findall(answer):
+    for block in _blocks(answer):
         try:
             out.append(ast.parse(block))
         except SyntaxError:
@@ -225,7 +234,10 @@ def handles_refusal_or_truncation(a: str) -> bool:
 
 def no_forced_schema_on_prose(a: str) -> bool:
     """Control t08: summarising into a paragraph should not get a JSON schema."""
-    return not re.search(r"response_format|output_config|json_schema|BaseModel", a)
+    # `output_config` alone is not a schema: it also carries `effort`, which a plain
+    # prose summary legitimately sets. Only its `format` field forces structure.
+    return not re.search(
+        r"response_format|output_config\s*=\s*\{[^}]*format|json_schema|BaseModel", a)
 
 
 def reasoning_before_label(a: str) -> bool:

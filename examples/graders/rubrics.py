@@ -5,6 +5,7 @@ the check is testing. A check that cannot cite a skill line does not belong here
 — that is the rule that stops the grader being written to flatter the result.
 """
 from __future__ import annotations
+import re
 import checks
 
 R = lambda *rows: list(rows)
@@ -103,7 +104,18 @@ RUBRICS: dict[str, list[tuple[str, str]]] = {
 INVERTED = {("t13", "model_driven_loop"), ("t14", "model_driven_loop")}
 
 
+# Sessions often echo their own working directory, e.g. /tmp/skills-eval/arm-b/t11-r2.
+# Left in, it names the arm (breaking blind grading) and its "eval" satisfied
+# measures_before_decomposing on answers that never mentioned measuring.
+RUN_PATH = re.compile(r"[^\s`'\"()]*skills-eval[\\/]+(?:arm-[ab]|_records)[\\/]*[^\s`'\"()]*", re.I)
+
+
+def redact(answer: str) -> str:
+    return RUN_PATH.sub("<run-dir>", answer)
+
+
 def grade(task_id: str, answer: str) -> dict:
+    answer = redact(answer)
     rows = {}
     for fn_name, cite in RUBRICS[task_id]:
         raw = getattr(checks, fn_name)(answer)
