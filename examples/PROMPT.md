@@ -50,7 +50,7 @@ For every run:
   tasks or runs; carryover contaminates later ones.
 - Give it the task's `prompt` field **verbatim**. Do not add hints, do not mention
   skills, do not rephrase.
-- Use the same model for both arms. Record which one.
+- Use the same model for both arms. sonnet-5 with high effort.
 - Capture the full final answer and, if you can, the transcript.
 
 A headless invocation is the easiest way to script this, e.g. from inside the arm
