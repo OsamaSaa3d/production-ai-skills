@@ -1,53 +1,231 @@
 # Production AI Skills
 
+<!-- badges:start -->
+[![CI](https://github.com/OsamaSaa3d/production-ai-skills-temp/actions/workflows/validate-skills.yml/badge.svg)](https://github.com/OsamaSaa3d/production-ai-skills-temp/actions/workflows/validate-skills.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
+[![Skills](https://img.shields.io/badge/skills-10-blue.svg)](#the-skills)
+[![Reference files](https://img.shields.io/badge/reference%20files-58-blue.svg)](#how-a-skill-is-laid-out)
+[![Provider neutral](https://img.shields.io/badge/provider-neutral-brightgreen.svg)](#two-conventions-enforced-in-ci)
+[![Eval](https://img.shields.io/badge/eval-harness%20ready%2C%20no%20results%20yet-lightgrey.svg)](RESULTS.md)
+<!-- badges:end -->
+
 Agent skills that make coding agents write **production-grade LLM integration code** — instead of the framework spaghetti they reach for by default.
 
-Ask an agent to "build me an agent that can query our database" and you usually get `AgentExecutor`, a ReAct prompt, a regex parser, and a retry loop wrapped around a call that already had a schema guarantee. Not because the agent is bad, but because that pattern dominates the training data. These skills replace that default with the one a senior engineer would pick: call the API directly, turn on strict mode, measure it, and add complexity only where a measurement says it helps.
+## Why this exists
 
-Every skill is written to be **argued with**. Each one states its defaults, the evidence behind them, the pitfalls, and — explicitly — *when to break the rules*.
+Coding agents are very good at producing *plausible* LLM application code.
+
+They are much less reliable at choosing the right architecture, deciding when an agent is actually necessary, designing tool boundaries, controlling context growth, or determining whether a change improved the system.
+
+Ask an agent to "build me an agent that can query our database" and you usually get `AgentExecutor`, a ReAct prompt, a regex parser, and a retry loop wrapped around a call that already had a schema guarantee. Not because the agent is bad, but because that pattern dominates the training data.
+
+Most existing guidance is either framework-specific, vendor-specific, opinionated without evidence, or too large to load into an agent on every task.
+
+These skills encode engineering judgment as **progressively disclosed instructions**, with explicit exceptions and an evaluation harness to test whether that judgment actually transfers to generated code. Every skill is written to be **argued with**: each one states its defaults, the evidence behind them, the pitfalls, and — explicitly — *when to break the rules*.
+
+## What this is not
+
+- **Not a new agent framework.** No package, no runtime, no imports. Markdown and YAML frontmatter.
+- **Not a replacement for provider documentation.** Every file naming an API surface tells the agent to check the live reference first.
+- **Not a collection of immutable rules.** They are defaults. Each skill names the case where its own default is wrong.
+- **Not guaranteed to improve every model or task.** That is what the eval harness is for, and it includes control tasks the skills can *lose* on.
+- **Not self-updating.** The skills do not update themselves. APIs move; these files do not move with them. That is why the verify-before-you-build convention exists, and why each skill carries a `version`.
+- **Not vendor-specific.** Provider-specific features are labelled as such, with the portable alternative named.
+
+## How it fits together
+
+```text
+                ┌──────────────────────┐
+                │     Coding agent     │
+                └──────────┬───────────┘
+                           │
+                    skill triggering
+                   (name + description)
+                           │
+              ┌────────────▼─────────────┐
+              │        10 skills         │
+              │                          │
+              │  architecture            │
+              │  tool calling            │
+              │  tool design             │
+              │  structured output       │
+              │  prompts                 │
+              │  context & memory        │
+              │  RAG                     │
+              │  multi-agent             │
+              │  model selection         │
+              │  evals                   │
+              └────────────┬─────────────┘
+                           │
+                     progressive
+                     disclosure
+                           │
+                  ┌────────▼─────────┐
+                  │   references/    │
+                  │ loaded on demand │
+                  └──────────────────┘
+
+                     measured by
+                          │
+          ┌───────────────▼──────────────┐
+          │       blind A/B eval         │
+          │                              │
+          │  arm A: no skills            │
+          │  arm B: all skills           │
+          │                              │
+          │  deterministic checks        │
+          │  calibrated judge            │
+          │  cost / effort metrics       │
+          │  triggering rate             │
+          └───────────────┬──────────────┘
+                          │
+                      published
+                       results
+```
+
+## Project status
+
+Every number below — and the counts in the badges above — is generated by `python3 scripts/stats.py --write-readme`, not typed by hand. Static self-metrics age badly, and this repo is about engineering discipline. The eval figures are imported from the real task and rubric definitions rather than copied out of them, so when a number here is wrong, the repo is wrong.
+
+<!-- stats:start -->
+| Measure | Value |
+| --- | --- |
+| Skills | 10 |
+| Reference files | 58 |
+| Markdown files | 68 |
+| Skill markdown | ~12k lines (3,003 in `SKILL.md` + 8,861 in `references/`) |
+| Eval tasks | 16 (3 control, 10 positive, 3 trap) |
+| Deterministic checks | 22 |
+| Validated rubrics | 16 |
+| Rubric check assignments | 51 |
+| Recorded runs | arm A 29, arm B 0 |
+
+<sub>Generated by `python3 scripts/stats.py --markdown`. Refresh in place with `python3 scripts/stats.py --write-readme`.</sub>
+<!-- stats:end -->
+
+## The skills
+
+| Skill | Problem it solves | Default it installs | Main failure it prevents |
+|---|---|---|---|
+| [**agent-vs-workflow-decision**](agent-vs-workflow-decision/) | Overbuilding | Simplest viable architecture | Unnecessary agent loops |
+| [**llm-tool-calling**](llm-tool-calling/) | Brittle integrations | Native tool schemas | Parsing failures |
+| [**tool-design**](tool-design/) | Poor tool interfaces | Task-oriented tools | Wrong tool, wrong arguments |
+| [**structured-output**](structured-output/) | Unreliable JSON | Native schemas, strict mode | Malformed outputs |
+| [**system-prompt-engineering**](system-prompt-engineering/) | Bloated, contradictory prompts | Explicit instruction hierarchy | Instruction conflicts |
+| [**context-and-memory**](context-and-memory/) | Context overflow | Deliberate state management | Long-horizon degradation |
+| [**rag-pipeline-standard**](rag-pipeline-standard/) | Poor retrieval | Evaluated retrieval pipeline | Hallucination and misses |
+| [**subagents-and-multi-agent**](subagents-and-multi-agent/) | Premature decomposition | Single agent first | Coordination cost |
+| [**model-selection**](model-selection/) | Overspending | Capability-gated routing | Unnecessary cost |
+| [**evals-before-shipping**](evals-before-shipping/) | Subjective "improvement" | Measured change | Shipped regressions |
+
+<details>
+<summary>What each skill actually covers</summary>
+
+| Skill | Use it when | Covers |
+|---|---|---|
+| **agent-vs-workflow-decision** | Before writing any code for an "agent" | Single call vs workflow vs agent vs multi-agent; the five workflow patterns; the cost multipliers |
+| **llm-tool-calling** | The model needs to invoke functions | Native tool calling, strict mode, the agent loop, why not frameworks |
+| **tool-design** | Designing, naming, or refactoring agent tools | Naming and decomposition, typed fields over query strings, tool use examples, tool search, programmatic calling |
+| **structured-output** | You need data back, not prose | JSON Schema + strict mode, extraction and classification patterns, refusal and truncation handling |
+| **system-prompt-engineering** | Writing or debugging a system prompt | Altitude, contradiction debugging, metaprompting, cache-safe assembly, trust boundaries, versioning |
+| **context-and-memory** | A task outruns the context window, or must survive a reset | Compaction, tool-result clearing, the four memory types, self-updating rules files |
+| **rag-pipeline-standard** | Retrieval over private data | RAG vs tools vs direct context, chunking, contextual retrieval, hybrid search, reranking |
+| **subagents-and-multi-agent** | Someone proposes splitting into multiple agents | Context isolation, delegation prompts, orchestrator-workers, cost caps |
+| **model-selection** | Choosing a model, or the bill is too high | Capability gating, cost per *successful* task, eval-driven escalation |
+| **evals-before-shipping** | Any change to a prompt, model, tool, or retriever | Tool-call and RAG suites, trajectory metrics, judge calibration, CI |
+
+</details>
+
+## Start here
+
+If you're reading cold, this is the order the skills were meant to be met in:
+
+```text
+        I want to build an LLM app
+                    │
+                    ▼
+      agent-vs-workflow-decision
+                    │
+             choose an interface
+              ┌─────┴─────┐
+              ▼           ▼
+        llm-tool-      structured-
+         calling         output
+              └─────┬─────┘
+                    ▼
+              tool-design
+                    │
+                    ▼
+     context-and-memory / RAG
+                    │
+                    ▼
+            model-selection
+                    │
+                    ▼
+        evals-before-shipping
+```
+
+Short version: **agent-vs-workflow-decision** to pick the architecture, **llm-tool-calling** or **structured-output** to build it, **evals-before-shipping** to find out whether it works.
 
 ## Install
 
 Skills are directories. Drop the ones you want where your agent looks for them.
 
-**Claude Code** — project-scoped (checked in, shared with your team):
-
 ```bash
 git clone https://github.com/OsamaSaa3d/production-ai-skills-temp
-mkdir -p .claude/skills
-cp -r production-ai-skills-temp/{llm-tool-calling,structured-output,tool-design} .claude/skills/
+cd production-ai-skills-temp
+./scripts/install.sh --target claude-code --user
 ```
 
-Or user-scoped, available in every project:
+On Windows, same flags:
+
+```powershell
+.\scripts\install.ps1 --target claude-code --user
+```
+
+Targets are `claude-code`, `codex`, `cursor`, `opencode`, `copilot`, and `agents`. Scope is `--user` (default) or `--project`; `--dest DIR` overrides both. The installer copies **only** the skill directories — discovered by globbing `*/SKILL.md`, so the list never goes stale — and never `scripts/`, `examples/`, or `.github/`. Use `--list` to see every resolved destination and `--dry-run` to see what would be copied.
+
+Prefer to do it by hand? They're plain directories:
 
 ```bash
-cp -r production-ai-skills-temp/* ~/.claude/skills/
+mkdir -p .claude/skills
+cp -r {llm-tool-calling,structured-output,tool-design} .claude/skills/
 ```
 
-**Anything else** — the skills are plain markdown with YAML frontmatter and no runtime dependency. Point your harness at the directories, or paste a `SKILL.md` into a system prompt.
+Take the whole set or a few. They cross-reference each other, but each stands alone.
 
-Take the whole set or a few. They cross-reference each other but each stands alone.
+## Compatibility
 
-## The skills
+These are plain directories following the [Agent Skills](https://agentskills.io) convention — `SKILL.md` with `name`/`description` frontmatter, optional `references/`. No runtime, no dependency, nothing to install. Any agent implementing that convention can load them.
 
-| Skill | Use it when | Covers |
+Verified targets:
+
+| Agent | Project scope | User scope |
 |---|---|---|
-| [**agent-vs-workflow-decision**](agent-vs-workflow-decision/) | Before writing any code for an "agent" | Single call vs workflow vs agent vs multi-agent; the five workflow patterns; the cost multipliers |
-| [**llm-tool-calling**](llm-tool-calling/) | The model needs to invoke functions | Native tool calling, strict mode, the agent loop, why not frameworks |
-| [**tool-design**](tool-design/) | Designing, naming, or refactoring agent tools | Naming and decomposition, typed fields over query strings, tool use examples, tool search, programmatic calling |
-| [**structured-output**](structured-output/) | You need data back, not prose | JSON Schema + strict mode, extraction and classification patterns, refusal and truncation handling |
-| [**system-prompt-engineering**](system-prompt-engineering/) | Writing or debugging a system prompt | Altitude, contradiction debugging, metaprompting, cache-safe assembly, trust boundaries, versioning |
-| [**context-and-memory**](context-and-memory/) | A task outruns the context window, or must survive a reset | Compaction, tool-result clearing, the four memory types, self-updating rules files |
-| [**rag-pipeline-standard**](rag-pipeline-standard/) | Retrieval over private data | RAG vs tools vs direct context, chunking, contextual retrieval, hybrid search, reranking |
-| [**subagents-and-multi-agent**](subagents-and-multi-agent/) | Someone proposes splitting into multiple agents | Context isolation, delegation prompts, orchestrator-workers, cost caps |
-| [**model-selection**](model-selection/) | Choosing a model, or the bill is too high | Capability gating, cost per *successful* task, eval-driven escalation |
-| [**evals-before-shipping**](evals-before-shipping/) | Any change to a prompt, model, tool, or retriever | Tool-call and RAG suites, trajectory metrics, judge calibration, CI |
+| **Claude Code** | `.claude/skills/` | `~/.claude/skills/` |
+| **Codex** | `.agents/skills/` | `~/.agents/skills/` (legacy: `~/.codex/skills/`) |
+| **Cursor** | `.cursor/skills/`, `.agents/skills/` | `~/.cursor/skills/`, `~/.agents/skills/` |
+| **opencode** | `.opencode/skills/`, `.claude/skills/`, `.agents/skills/` | `~/.config/opencode/skills/`, `~/.claude/skills/`, `~/.agents/skills/` |
+| **GitHub Copilot** | `.github/skills/`, `.claude/skills/`, `.agents/skills/` | `~/.copilot/skills/`, `~/.agents/skills/` |
 
-Rough order if you're starting cold: **agent-vs-workflow-decision** to pick the architecture, **llm-tool-calling** or **structured-output** to build it, **evals-before-shipping** to find out whether it works.
+`~/.agents/skills/` is a genuine cross-agent convention — Codex, Cursor, opencode and Copilot all read it. Claude Code is the only holdout, so two runs cover all five:
+
+```bash
+./scripts/install.sh --target agents --user       # Codex, Cursor, opencode, Copilot
+./scripts/install.sh --target claude-code --user  # Claude Code
+```
+
+One caveat worth knowing: some opencode builds load only the singular `skill/` directory. If the skills don't show up there, re-run with `--dest ~/.config/opencode/skill`. The installer's `--help` says so too.
+
+Anything else — the skills are markdown. Point your harness at the directories, or paste a `SKILL.md` into a system prompt.
+
+**Two constraints the linter enforces so this stays true.** `name` is capped at 64 characters, because that is the tightest limit across these agents (Cursor and Copilot). `description` is capped at **500 characters**, which is Codex's limit — the strictest of the five. Exceed it and Codex drops the skill silently, which is the worst failure mode available: the skill is installed, looks fine, and never fires. Since the description is the *only* thing an agent sees before deciding to load a skill, it is load-bearing, and it is checked in CI rather than trusted.
+
+The guidance itself is provider-agnostic where possible. Provider-specific API examples are explicitly labelled.
 
 ## How a skill is laid out
 
-```
+```text
 skill-name/
 ├── SKILL.md            # the whole practice, loaded when the skill triggers
 └── references/         # loaded only when SKILL.md points at them
@@ -56,19 +234,35 @@ skill-name/
 
 `SKILL.md` carries the decisions. References carry the detail — full payload shapes, worked examples, complete harnesses — and cost nothing until something reads them. This is progressive disclosure: the metadata is always resident, the body loads on trigger, the references load on demand.
 
+Each `SKILL.md` also opens with an **Avoid / Prefer** table and a **Minimal pattern** flow, so an agent gets the actionable core before it decides whether to read the rest, and closes with **Success criteria** — the measurable things a correct application should move. If none of them move, the skill didn't help.
+
+## Measured, not asserted
+
+`examples/` holds a pre-registered blind A/B eval that asks the only question that matters: does installing these skills change the code a coding agent writes?
+
+Arm A gets no skills. Arm B gets all ten. Same tasks, same model, blinded filenames, deterministic checks plus a fixture-validated rubric — and control tasks where applying a skill is the *wrong* answer, so the skills can lose.
+
+It reports per-task scores, win/tie/loss, bootstrap confidence intervals and effect size rather than a bare pair of averages, and it separates the two ways a skill can fail: the content was wrong, or the description never got it loaded.
+
+**[Latest evaluation → RESULTS.md](RESULTS.md)** · [methodology](examples/README.md)
+
 ## Two conventions, enforced in CI
 
 **Provider-neutral.** These skills are not about one vendor. Code samples name a provider's syntax to stay concrete, but no skill assumes you're on a particular API, and vendor model ids never appear hardcoded in a sample — they're placeholders you pin yourself. Genuinely provider-specific features (`defer_loading`, `input_examples`, server-side context editing) are labelled as such where they appear, with the portable alternative named.
 
 **Verify before you build.** Endpoint shapes, parameter names, limits, and model support all move, and a skill that quietly goes stale is worse than no skill. Every file naming an API surface carries a banner telling the agent to check the provider's live reference first — and to correct any drift it finds with the *smallest possible edit*, so the surrounding argument survives.
 
-`scripts/lint_skills.py` enforces both, plus frontmatter validity, name/directory agreement, description length, and link integrity in both directions.
+Both are machine-checked, along with frontmatter validity, name/directory agreement, description length, and link integrity in both directions:
 
 ```bash
 python3 scripts/lint_skills.py
 ```
 
-No dependencies — standard-library Python 3. It runs on every push and pull request.
+No dependencies — standard-library Python 3. It runs on every push and pull request, alongside the grader validation, the stats generator (a broken generator means a silently stale README), and a syntax check on the installer.
+
+## Versioning
+
+Each `SKILL.md` carries a `version` in its frontmatter, and the repo is tagged. If you installed these six months ago, that field tells you what you're running — the skills do not update themselves, so pin what you copied and diff it against a tag when you upgrade.
 
 ## Contributing
 
@@ -77,6 +271,7 @@ Same bar the skills set for themselves:
 - **Every claim earns its place.** A number needs a source; a rule needs the failure it prevents. Run the deletion test — if removing a line changes no behavior, it shouldn't be there.
 - **Defaults, not laws.** Say when the rule is wrong, not just when it's right.
 - **Add the "when to break the rules" case.** If you can't think of one, you probably don't understand the rule yet.
+- **Bump the skill's `version`** when you change its guidance, not when you fix a typo.
 - **Run the linter before opening a PR.**
 
 ## License
