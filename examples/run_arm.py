@@ -130,11 +130,29 @@ def parse_stream(lines: list[str]) -> dict:
                 model=model, tools=tools, fired=fired, transcript="\n".join(transcript))
 
 
+# Directories a session creates by installing or building, not by writing code.
+# Capturing them once put a 40 MB virtualenv into an answer, where the graders
+# would have scored third-party library source as if the session wrote it.
+SKIP_DIRS = {".claude", ".git", "__pycache__", "node_modules", "venv", ".venv", "env",
+             ".env", "site-packages", ".mypy_cache", ".pytest_cache", ".ruff_cache",
+             ".tox", "dist", "build"}
+
+
+def _skipped(d: pathlib.Path, p: pathlib.Path) -> bool:
+    rel = p.relative_to(d)
+    for i, part in enumerate(rel.parts[:-1]):
+        if part in SKIP_DIRS or part.endswith(".egg-info"):
+            return True
+        if (d.joinpath(*rel.parts[:i + 1]) / "pyvenv.cfg").exists():
+            return True
+    return False
+
+
 def collect_files(d: pathlib.Path) -> str:
     parts = []
     for p in sorted(d.rglob("*")):
         rel = p.relative_to(d).as_posix()
-        if not p.is_file() or rel.startswith(".claude/") or "__pycache__" in rel:
+        if not p.is_file() or _skipped(d, p):
             continue
         if p.stat().st_size > MAX_FILE_BYTES:
             parts.append(f"### `{rel}`\n\n(omitted: {p.stat().st_size} bytes)\n")
