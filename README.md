@@ -244,9 +244,38 @@ Arm A gets no skills. Arm B gets all ten. Same tasks, same model, blinded filena
 
 It reports per-task scores, win/tie/loss, bootstrap confidence intervals and effect size rather than a bare pair of averages, and it separates the two ways a skill can fail: the content was wrong, or the description never got it loaded.
 
+### How the test works
+
+**The tasks.** There are 16 coding requests, phrased the way a user would phrase them, and none names a technique or a skill. For example: *"We have a REST API with 14 endpoints for our CRM. Expose it to our agent."* They come in three kinds:
+- **10 positives:** the skill should help.
+- **3 traps:** the tempting answer is wrong, like building an "agent" for what is really a fixed workflow.
+- **3 controls:** applying the skill *is* the mistake, like forcing a JSON schema onto a prose summary, or ripping out a framework the user said they depend on.
+
+**The runs.** Each task runs 3 times in each arm, and every run is a fresh headless Claude Code session in its own empty directory. That's 96 sessions in total.
+- **Arm A:** no skills.
+- **Arm B:** the same setup, with all ten skills installed.
+
+The answer graded is the session's final message plus every file it wrote.
+
+**The score.** Each task has 1–7 mechanical pass/fail checks, and none is an LLM judge.
+- Some parse the Python and look for a structure, such as a real tool schema, `strict: true`, or an agent loop.
+- Others search the text, for example for a framework import or for saying "a workflow is enough".
+- On controls and traps, some checks are inverted, so doing the skill-like thing fails.
+
+A run's score is the fraction of checks it passes. For example, arm A on t01 passed 3 of 7 checks and scored 0.43, while arm B passed 7 of 7 and scored 1.00. Filenames are hashed and paths redacted, so the grader never knows which arm it is scoring.
+
+**The numbers.**
+- A task's score is the mean of its 3 runs, and its **delta** is B minus A.
+- A task is a *tie* if the delta is under ±0.05, otherwise a win or a loss.
+- The headline **mean delta** averages the 16 task deltas.
+- The **95% CI** is a bootstrap: resample the 16 tasks 10,000 times and keep the middle 95% of mean deltas. If it stays above zero, the gain is unlikely to be noise from this task mix.
+- **Trigger rate** is how often arm B actually loaded a skill, read from the session transcript.
+
+The full method is in [examples/RESULTS.md → How the scores are made](examples/RESULTS.md#how-the-scores-are-made), with every task's checks, worked examples and the statistics.
+
 ### Results (run 1, n=3, sonnet-5)
 
-Skills arm **12 wins, 4 ties, 0 losses** across 16 tasks; mean score 0.40 → 0.76, delta **+0.36** (95% CI +0.22 to +0.51). No control task went negative, and the skills arm did no extra work.
+Skills arm **12 wins, 4 ties, 0 losses** across 16 tasks. Mean score 0.40 → 0.76, delta **+0.36** (95% CI +0.22 to +0.51). No control task went negative. Arm B did no extra work: slightly fewer turns and tool calls, and about 4% more cost. A skill loaded in 81% of arm-B runs.
 
 The honest caveats:
 - A third to a half of the gain is arm B writing tool schemas in the style the skills prescribe. Without those style checks the delta is +0.20, and the "add one tool" control turns slightly negative.

@@ -33,6 +33,126 @@ on style checks, so its content effect is the least certain of the four.
 `context-and-memory`, `evals-before-shipping`, `model-selection`,
 `rag-pipeline-standard`, `subagents-and-multi-agent` or `system-prompt-engineering`.
 
+## How the scores are made
+
+Every number in this file comes from the same five steps. None of them uses an LLM
+judge, and the grader never sees which arm an answer came from.
+
+### 1. One session → one answer
+
+For each task, each arm, each run:
+- A fresh, empty directory is created. In arm B, all ten skills are copied into its
+  `.claude/skills/`.
+- `claude -p "<task prompt>"` runs there headless (`examples/run_arm.py`).
+- The **answer** is the session's final message, plus the text of every file it wrote
+  into the directory. Sessions often put the code in a file and reply with a summary,
+  and the code is what gets graded.
+
+16 tasks × 3 runs × 2 arms = **96 answers**. Each is saved under a salted hash filename
+(`runs/a/`, `runs/b/`), so a filename doesn't reveal the arm.
+
+### 2. Answer → a list of pass/fail checks
+
+Each task has a **rubric**: a short list of mechanical checks (`graders/rubrics.py`,
+implemented in `graders/checks.py`). A check is one of two kinds:
+- **AST:** parse the Python in the answer's code blocks and look for a structure, such as
+  a dict literal with `name` and `input_schema`, `strict=True`, or a `while` loop whose
+  condition reads `stop_reason`.
+- **Regex:** search the text for a pattern, such as a framework import, or the answer
+  saying a workflow is enough.
+
+Each check cites the line of the skill it is testing. Before grading, run-directory paths
+are removed from the answer, so the arm can't leak through a path.
+
+| task | kind | the checks (all must pass for 1.00) |
+|---|---|---|
+| t01 orders Q&A over Postgres | positive | native tool schema · `strict` on · `additionalProperties: false` · no framework · tool result sent back as a tool message · tool errors returned as data · model never writes the executed SQL |
+| t02 refund bot loop | positive | native tool schema · `strict` · tool result message · errors as data · iteration cap · no framework |
+| t03 wrap two Python functions | positive | native tool schema · `strict` · `additionalProperties: false` · no framework · tool result message |
+| t04 add a step inside LangGraph | **control** | **keeps LangGraph** · `strict` on the new tool |
+| t05 invoice extraction | positive | nullable optional fields · handles refusal/truncation · `additionalProperties: false` · no framework |
+| t06 email urgency classifier | positive | enum for the label · reasoning field before the label · handles refusal/truncation · no framework |
+| t07 contract clauses for legal | positive | nullable fields · handles refusal/truncation · mentions cost/trade-off |
+| t08 meeting summary paragraph | **control** | **no JSON schema forced onto prose** |
+| t09 ticket search with a query DSL | **trap** | model fills typed fields, not a query string · enums for bounded fields · query built in code · native tool schema |
+| t10 expose a 14-endpoint CRM | positive | fewer tools than endpoints (or says so) · native tool schema |
+| t11 agent inverts `mode` | positive | says to measure/eval before splitting · mentions the cost of more tools |
+| t12 one fetch-user tool | **control** | **no tool-search / deferred-loading / examples ceremony** · native tool schema |
+| t13 daily CSV → email | **trap** | says a workflow/script is enough · **no** model-driven loop |
+| t14 bug-report triage | **trap** | says a workflow is enough · **no** model-driven loop |
+| t15 competitor research brief | positive | mentions cost/trade-off · has a stopping condition |
+| t16 fix a failing test | positive | model-driven loop present · stopping condition · mentions cost |
+
+The **bold** checks are the ones where "applying the skill" is the wrong move. On a
+control, the pass is holding back. On the two workflow traps (t13, t14),
+`model_driven_loop` is **inverted**: finding an agent loop is a fail.
+
+### 3. Checks → a run score
+
+**Run score = checks passed ÷ checks in the rubric**, between 0 and 1.
+
+Worked examples, taken from the actual data:
+
+| run | checks passed | run score |
+|---|---|---|
+| t01, arm A, run 0 | no framework ✓, errors as data ✓, SQL safe ✓; native schema ✗, strict ✗, additionalProperties ✗, tool message ✗ | 3/7 = **0.43** |
+| t01, arm B, run 0 | all 7 ✓ | 7/7 = **1.00** |
+| t14, arm A, run 0 | didn't say "workflow" ✗; built an agent loop ✗ (inverted) | 0/2 = **0.00** |
+| t14, arm B, run 1 | didn't say "workflow" ✗; no agent loop ✓ | 1/2 = **0.50** |
+| t06, arm B, run 0 | enum ✓, reasoning first ✓, refusal handled ✓, no framework ✓ | 4/4 = **1.00** |
+
+Rubrics are short, so scores move in big steps. On a 2-check rubric a run can only score
+0, 0.5 or 1.
+
+### 4. Run scores → a task delta
+
+- **Task mean** for an arm is the mean of its 3 run scores. Arm A on t14 is
+  (0.00 + 0.50 + 0.50) / 3 = 0.33, and arm B is (1.00 + 0.50 + 1.00) / 3 = 0.83.
+- **Delta** = B mean − A mean = +0.50 for t14. A positive delta means the skills arm
+  scored higher.
+- **Win / tie / loss:** a task counts as a *tie* if |delta| < 0.05, otherwise a win or a
+  loss. The threshold exists because the smallest real difference on the longest rubric
+  is 1/7 ≈ 0.14. Anything under 0.05 is one check flipping in a single run.
+
+### 5. Task deltas → the headline
+
+- **Mean score / mean delta:** the mean over the 16 task means. Each task counts once,
+  however many checks it has.
+- **Median:** the same, using the middle value. It isn't pulled around by one task at
+  0 or 1.
+- **95% confidence interval [+0.22, +0.51]:** a bootstrap. Draw 16 tasks from the 16
+  with replacement, take the mean delta, repeat 10,000 times, and keep the middle 95%.
+  The seed is fixed, so the interval is reproducible. It resamples *tasks*, not runs,
+  because runs of the same task aren't independent. Plain reading: if a similar set of
+  tasks were run again, the true gain would plausibly fall anywhere between +0.22 and
+  +0.51. It is clearly above zero, but the exact size is uncertain.
+- **Cohen's d_z = +1.18:** mean delta ÷ standard deviation of the deltas. Above 0.8 is
+  conventionally "large". With only 16 coarse deltas, read it as "the direction is
+  consistent" rather than as a precise size.
+- **Cliff's delta = +0.61 ("large"):** within each task, compare every arm-B run with
+  every arm-A run. It is P(B higher) − P(A higher), averaged over tasks, and ranges from
+  −1 to +1. It makes no assumption about how scores are distributed, which matters for
+  scores that cluster at 0 and 1.
+
+### Triggering numbers
+
+These come from the session transcripts, not the answers. A skill counts as **fired**
+when the session called the `Skill` tool on it or read its `SKILL.md`.
+- **Fire rate:** runs where any repo skill fired ÷ arm-B runs.
+- **Precision:** correct loads ÷ all loads.
+- **Recall:** runs where the intended skill fired ÷ runs.
+
+Both precision and recall are computed on the positives and traps. Controls are excluded,
+because silence is correct there.
+
+### What a score is not
+
+A score of 1.00 means *every check on that rubric passed*, not that the code is
+production-ready. A 0.00 can mean bad code, or no code at all: t07 and t15 scored 0 in
+both arms because the sessions asked for missing inputs. The checks are proxies chosen to
+test specific claims the skills make. The *Sensitivity* section below shows how much the
+headline depends on which proxies you count.
+
 ## Controls: where the skills could lose
 
 No control task has a negative delta. That is the most important result in this file.

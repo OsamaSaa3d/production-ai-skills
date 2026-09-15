@@ -18,6 +18,15 @@ Skill fired in 39/48 arm-B runs (81%) · precision 0.87 · recall 0.85
 Effort: B used slightly fewer turns and tool calls, ~4% more cost
 ```
 
+**How to read these numbers:**
+- **A run score** is the fraction of that task's mechanical pass/fail checks the answer passes. There are 1–7 checks per task, done by AST parsing and regex, with no LLM judge.
+- **Wins, ties and losses** compare the two arms' mean scores per task. A difference under ±0.05 is a tie.
+- **The delta** is the average of the 16 per-task differences, B minus A.
+- **The CI** is a bootstrap over the 16 tasks.
+- **Fired** means the session transcript shows the skill being loaded.
+
+Every task's checks, worked examples and the statistics are explained step by step in **[examples/RESULTS.md → How the scores are made](examples/RESULTS.md#how-the-scores-are-made)**.
+
 What that supports, and what it doesn't:
 
 - **The skills helped on the 4 skills the tasks target**, and no answer got worse on average. The other 6 skills were not tested.
