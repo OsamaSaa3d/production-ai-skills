@@ -154,8 +154,22 @@ def check_frontmatter(skill_dir: Path, skill_md: Path, text: str) -> None:
         warn(FRONTMATTER, skill_md, f"unrecognized frontmatter keys: {sorted(unexpected)}")
 
     metadata = fields.get("metadata")
-    if metadata is not None and not isinstance(metadata, dict):
-        err(FRONTMATTER, skill_md, f"'metadata' must be a mapping, got {type(metadata).__name__}")
+    if metadata is not None:
+        if not isinstance(metadata, dict):
+            err(FRONTMATTER, skill_md, f"'metadata' must be a mapping, got {type(metadata).__name__}")
+        else:
+            # The Agent Skills spec defines metadata as string keys to string
+            # values. An unquoted `version: 1.0` parses as a float, not a
+            # string — harmless here, but a strictly typed loader elsewhere
+            # can reject the skill over it, and 1.0 -> 1.10 silently becomes 1.1.
+            for mk, mv in metadata.items():
+                if not isinstance(mv, str):
+                    err(
+                        FRONTMATTER,
+                        skill_md,
+                        f"metadata.{mk} must be a string, got {type(mv).__name__} "
+                        f"({mv!r}) - quote the value",
+                    )
 
 
 def check_links(md: Path, skill_dir: Path, skill_names: set[str]) -> None:

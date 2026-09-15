@@ -2,7 +2,7 @@
 name: rag-pipeline-standard
 description: Builds and fixes retrieval over private data — knowledge bases, docs search, support bots, and RAG pipelines. Use when someone mentions RAG, vector databases, embeddings, semantic search, or chunking; or when retrieval returns irrelevant chunks, misses exact matches like error codes or ticket IDs, answers from the wrong source, or breaks on follow-up questions. Covers RAG vs tool calling vs direct context, document-level and contextual retrieval, hybrid search, reranking, and query rewriting.
 metadata:
-  version: 1.0
+  version: "1.0"
 ---
 
 # RAG Pipeline Standard

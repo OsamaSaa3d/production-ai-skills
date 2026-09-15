@@ -7,7 +7,7 @@ description: >-
   tool calling comes before any framework abstraction. Use it for cases as simple as "let the model query
   a database." Prefer direct API calls over LangChain or LlamaIndex unless already in use.
 metadata:
-  version: 1.0
+  version: "1.0"
 ---
 
 # LLM Tool Calling Without Frameworks
@@ -71,7 +71,7 @@ Apply this skill whenever you encounter any of:
 
 - A user asking to build an "agent," "assistant," "copilot," or any system where an LLM takes actions
 - Code that needs an LLM to call a function, query a database, hit an API, or trigger a workflow
-- Existing code using `langchain.agents`, `llama_index.agent`, `AgentExecutor`, `create_react_agent`, `initialize_agent`, or similar abstractions — propose rewriting it
+- Existing code using `langchain.agents`, `llama_index.agent`, `AgentExecutor`, `create_react_agent`, `initialize_agent`, or similar abstractions — propose rewriting it, unless it is already load-bearing and swapping it out costs more than it's worth (see "When to break the rules" below); a small or isolated usage is still worth the rewrite even if the project depends on the framework elsewhere
 - Any time you would otherwise reach for a framework to "orchestrate" LLM tool use
 - Code that parses tool calls out of LLM text output via regex, JSON extraction, or prompt-engineered formats — this is a sign someone is reinventing native tool calling badly
 - Existing tool definitions without `strict: true` — propose adding it

@@ -8,7 +8,7 @@ description: >-
   implementation. Apply it even when the user already said "agent" — the request usually describes a
   workflow.
 metadata:
-  version: 1.0
+  version: "1.0"
 ---
 
 # Choosing Between a Single Call, a Workflow, and an Agent

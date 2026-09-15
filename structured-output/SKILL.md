@@ -2,7 +2,7 @@
 name: structured-output
 description: Use whenever an LLM's response itself must be structured data rather than prose — extracting fields from a document, email, invoice, or transcript; classifying text; scoring or labeling content; converting unstructured input into records for a database or API; or generating a config or a plan. Use it wherever code prompts for JSON and parses the response, strips markdown fences off model output, or retries on parse failures. Do not use framework output parsers unless asked by name.
 metadata:
-  version: 1.0
+  version: "1.0"
 ---
 
 # Structured Output

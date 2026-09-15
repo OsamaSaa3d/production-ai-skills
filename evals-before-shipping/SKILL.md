@@ -2,7 +2,7 @@
 name: evals-before-shipping
 description: Use when writing tests for an LLM app, agent, or RAG pipeline — or before changing a prompt, swapping a model, adding or renaming a tool, or modifying retrieval, when you need to know whether it helped. Use it when someone says an LLM system "feels worse" or "seems better," or asks whether a change was an improvement. Covers tool-call correctness, retrieval and grounding, and task completion. Defaults to DeepEval, run in CI; swap in another eval library already in use.
 metadata:
-  version: 1.0
+  version: "1.0"
 ---
 
 # Eval Suites for LLM Apps

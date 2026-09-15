@@ -2,7 +2,7 @@
 name: tool-design
 description: Use when designing, naming, or refactoring tools for an LLM agent — writing a new tool, building an MCP server, wrapping an API as agent tools, or fixing an agent that calls the wrong tool or passes wrong arguments. Use it when tool definitions are eating the context window, when an agent has more than ~10 tools, when tool results are large, or when an agent must query a custom syntax — a search DSL, a filter grammar — and the plan is to describe it in the prompt and parse what the model emits.
 metadata:
-  version: 1.0
+  version: "1.0"
 ---
 
 # Tool Design for Agents

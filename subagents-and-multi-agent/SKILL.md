@@ -2,7 +2,7 @@
 name: subagents-and-multi-agent
 description: Use when someone proposes splitting an LLM system into multiple agents — a "multi-agent system," a "crew," a supervisor plus workers, a planner and an executor, or specialist agents per domain. Use it when an agent is running out of context, when tool results or file reads are flooding the transcript, when independent subtasks could run in parallel, or when parts of a task need different tool permissions. Decides between one agent, one agent with subagents, and separate coordinating agents.
 metadata:
-  version: 1.0
+  version: "1.0"
 ---
 
 # Subagents and Multi-Agent Systems

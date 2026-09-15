@@ -2,7 +2,7 @@
 name: system-prompt-engineering
 description: Use when writing, debugging, or refactoring a system prompt, developer message, agent instruction block, AGENTS.md, or CLAUDE.md. Use it when an agent ignores instructions, stops early, is too verbose or too terse, calls tools when it shouldn't, over-engineers, speculates instead of reading files, or behaves inconsistently between runs. Use it when a prompt grows past a screen, when someone wants to "add a rule" to fix a behavior, when the cache hit rate drops, or when migrating models.
 metadata:
-  version: 1.0
+  version: "1.0"
 ---
 
 # System Prompt Engineering

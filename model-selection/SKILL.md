@@ -2,7 +2,7 @@
 name: model-selection
 description: Use when choosing which model to call, when hardcoding a model string in new code, when costs are too high, when someone asks whether a cheaper or smaller model would work, or when routing different request types to different models. Use it against any provider exposing a /models endpoint, and when a system calls one large model for every request regardless of difficulty. Covers capability gating, cost-per-task math, and eval-driven escalation from small models to large.
 metadata:
-  version: 1.0
+  version: "1.0"
 ---
 
 # Model Selection
