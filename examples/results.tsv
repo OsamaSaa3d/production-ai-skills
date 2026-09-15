@@ -1,0 +1,307 @@
+task	kind	skill	arm	run	check	raw	passed	cites
+t01	positive	llm-tool-calling	a	2	uses_native_tool_calling	False	False	llm-tool-calling: pass tool definitions in the API request payload
+t01	positive	llm-tool-calling	a	2	strict_mode_on	False	False	llm-tool-calling: Set strict: true explicitly
+t01	positive	llm-tool-calling	a	2	additional_properties_false	False	False	llm-tool-calling: Every object needs additionalProperties: false
+t01	positive	llm-tool-calling	a	2	no_framework	True	True	llm-tool-calling: Don't do this — framework agent abstractions
+t01	positive	llm-tool-calling	a	2	tool_result_role	False	False	llm-tool-calling: result goes in a message with role tool
+t01	positive	llm-tool-calling	a	2	tool_errors_as_data	True	True	llm-tool-calling: return errors as data — the model can recover
+t01	positive	llm-tool-calling	a	2	sql_is_safe	True	True	tool-design: a model emitting executable query text is an injection surface
+t01	positive	llm-tool-calling	a	0	uses_native_tool_calling	False	False	llm-tool-calling: pass tool definitions in the API request payload
+t01	positive	llm-tool-calling	a	0	strict_mode_on	False	False	llm-tool-calling: Set strict: true explicitly
+t01	positive	llm-tool-calling	a	0	additional_properties_false	False	False	llm-tool-calling: Every object needs additionalProperties: false
+t01	positive	llm-tool-calling	a	0	no_framework	True	True	llm-tool-calling: Don't do this — framework agent abstractions
+t01	positive	llm-tool-calling	a	0	tool_result_role	False	False	llm-tool-calling: result goes in a message with role tool
+t01	positive	llm-tool-calling	a	0	tool_errors_as_data	True	True	llm-tool-calling: return errors as data — the model can recover
+t01	positive	llm-tool-calling	a	0	sql_is_safe	True	True	tool-design: a model emitting executable query text is an injection surface
+t02	positive	llm-tool-calling	a	0	uses_native_tool_calling	True	True	llm-tool-calling: native tool calling
+t02	positive	llm-tool-calling	a	0	strict_mode_on	True	True	llm-tool-calling: Set strict: true explicitly
+t02	positive	llm-tool-calling	a	0	tool_result_role	True	True	llm-tool-calling: role tool, tool_call_id matching
+t02	positive	llm-tool-calling	a	0	tool_errors_as_data	True	True	llm-tool-calling: Letting tool execution errors raise
+t02	positive	llm-tool-calling	a	0	has_stopping_condition	False	False	llm-tool-calling/agent-loop: an iteration cap is the minimum
+t02	positive	llm-tool-calling	a	0	no_framework	True	True	llm-tool-calling: write the call directly
+t01	positive	llm-tool-calling	a	1	uses_native_tool_calling	False	False	llm-tool-calling: pass tool definitions in the API request payload
+t01	positive	llm-tool-calling	a	1	strict_mode_on	False	False	llm-tool-calling: Set strict: true explicitly
+t01	positive	llm-tool-calling	a	1	additional_properties_false	False	False	llm-tool-calling: Every object needs additionalProperties: false
+t01	positive	llm-tool-calling	a	1	no_framework	True	True	llm-tool-calling: Don't do this — framework agent abstractions
+t01	positive	llm-tool-calling	a	1	tool_result_role	False	False	llm-tool-calling: result goes in a message with role tool
+t01	positive	llm-tool-calling	a	1	tool_errors_as_data	True	True	llm-tool-calling: return errors as data — the model can recover
+t01	positive	llm-tool-calling	a	1	sql_is_safe	True	True	tool-design: a model emitting executable query text is an injection surface
+t02	positive	llm-tool-calling	a	1	uses_native_tool_calling	True	True	llm-tool-calling: native tool calling
+t02	positive	llm-tool-calling	a	1	strict_mode_on	True	True	llm-tool-calling: Set strict: true explicitly
+t02	positive	llm-tool-calling	a	1	tool_result_role	True	True	llm-tool-calling: role tool, tool_call_id matching
+t02	positive	llm-tool-calling	a	1	tool_errors_as_data	True	True	llm-tool-calling: Letting tool execution errors raise
+t02	positive	llm-tool-calling	a	1	has_stopping_condition	False	False	llm-tool-calling/agent-loop: an iteration cap is the minimum
+t02	positive	llm-tool-calling	a	1	no_framework	True	True	llm-tool-calling: write the call directly
+t03	positive	llm-tool-calling	a	0	uses_native_tool_calling	False	False	llm-tool-calling: native tool calling
+t03	positive	llm-tool-calling	a	0	strict_mode_on	False	False	llm-tool-calling: Set strict: true explicitly
+t03	positive	llm-tool-calling	a	0	additional_properties_false	False	False	llm-tool-calling: strict-mode requirements
+t03	positive	llm-tool-calling	a	0	no_framework	True	True	llm-tool-calling: reach for native before framework
+t03	positive	llm-tool-calling	a	0	tool_result_role	False	False	llm-tool-calling: send tool results back
+t02	positive	llm-tool-calling	a	2	uses_native_tool_calling	False	False	llm-tool-calling: native tool calling
+t02	positive	llm-tool-calling	a	2	strict_mode_on	False	False	llm-tool-calling: Set strict: true explicitly
+t02	positive	llm-tool-calling	a	2	tool_result_role	False	False	llm-tool-calling: role tool, tool_call_id matching
+t02	positive	llm-tool-calling	a	2	tool_errors_as_data	True	True	llm-tool-calling: Letting tool execution errors raise
+t02	positive	llm-tool-calling	a	2	has_stopping_condition	False	False	llm-tool-calling/agent-loop: an iteration cap is the minimum
+t02	positive	llm-tool-calling	a	2	no_framework	True	True	llm-tool-calling: write the call directly
+t03	positive	llm-tool-calling	a	1	uses_native_tool_calling	False	False	llm-tool-calling: native tool calling
+t03	positive	llm-tool-calling	a	1	strict_mode_on	False	False	llm-tool-calling: Set strict: true explicitly
+t03	positive	llm-tool-calling	a	1	additional_properties_false	False	False	llm-tool-calling: strict-mode requirements
+t03	positive	llm-tool-calling	a	1	no_framework	True	True	llm-tool-calling: reach for native before framework
+t03	positive	llm-tool-calling	a	1	tool_result_role	False	False	llm-tool-calling: send tool results back
+t03	positive	llm-tool-calling	a	2	uses_native_tool_calling	False	False	llm-tool-calling: native tool calling
+t03	positive	llm-tool-calling	a	2	strict_mode_on	False	False	llm-tool-calling: Set strict: true explicitly
+t03	positive	llm-tool-calling	a	2	additional_properties_false	False	False	llm-tool-calling: strict-mode requirements
+t03	positive	llm-tool-calling	a	2	no_framework	True	True	llm-tool-calling: reach for native before framework
+t03	positive	llm-tool-calling	a	2	tool_result_role	False	False	llm-tool-calling: send tool results back
+t04	control	llm-tool-calling	a	2	keeps_framework	True	True	llm-tool-calling: a framework already load-bearing — don't remove it
+t04	control	llm-tool-calling	a	2	strict_mode_on	False	False	llm-tool-calling: strict applies regardless of harness
+t05	positive	structured-output	a	0	nullable_optional_fields	False	False	structured-output: a field is nullable if a real document might not contain it
+t05	positive	structured-output	a	0	handles_refusal_or_truncation	False	False	structured-output: the two failure modes you must handle
+t05	positive	structured-output	a	0	additional_properties_false	False	False	structured-output: additionalProperties false on every object
+t05	positive	structured-output	a	0	no_framework	True	True	structured-output: don't use Instructor / output parsers
+t04	control	llm-tool-calling	a	0	keeps_framework	True	True	llm-tool-calling: a framework already load-bearing — don't remove it
+t04	control	llm-tool-calling	a	0	strict_mode_on	False	False	llm-tool-calling: strict applies regardless of harness
+t04	control	llm-tool-calling	a	1	keeps_framework	True	True	llm-tool-calling: a framework already load-bearing — don't remove it
+t04	control	llm-tool-calling	a	1	strict_mode_on	False	False	llm-tool-calling: strict applies regardless of harness
+t05	positive	structured-output	a	2	nullable_optional_fields	False	False	structured-output: a field is nullable if a real document might not contain it
+t05	positive	structured-output	a	2	handles_refusal_or_truncation	False	False	structured-output: the two failure modes you must handle
+t05	positive	structured-output	a	2	additional_properties_false	False	False	structured-output: additionalProperties false on every object
+t05	positive	structured-output	a	2	no_framework	True	True	structured-output: don't use Instructor / output parsers
+t05	positive	structured-output	a	1	nullable_optional_fields	True	True	structured-output: a field is nullable if a real document might not contain it
+t05	positive	structured-output	a	1	handles_refusal_or_truncation	False	False	structured-output: the two failure modes you must handle
+t05	positive	structured-output	a	1	additional_properties_false	False	False	structured-output: additionalProperties false on every object
+t05	positive	structured-output	a	1	no_framework	True	True	structured-output: don't use Instructor / output parsers
+t07	positive	structured-output	a	0	nullable_optional_fields	False	False	structured-output: no 'not found' path forces invention
+t07	positive	structured-output	a	0	handles_refusal_or_truncation	False	False	structured-output: refusal and truncation
+t07	positive	structured-output	a	0	notes_cost_or_tradeoff	False	False	structured-output/extraction: provenance costs tokens, say so
+t07	positive	structured-output	a	1	nullable_optional_fields	False	False	structured-output: no 'not found' path forces invention
+t07	positive	structured-output	a	1	handles_refusal_or_truncation	False	False	structured-output: refusal and truncation
+t07	positive	structured-output	a	1	notes_cost_or_tradeoff	False	False	structured-output/extraction: provenance costs tokens, say so
+t07	positive	structured-output	a	2	nullable_optional_fields	False	False	structured-output: no 'not found' path forces invention
+t07	positive	structured-output	a	2	handles_refusal_or_truncation	False	False	structured-output: refusal and truncation
+t07	positive	structured-output	a	2	notes_cost_or_tradeoff	False	False	structured-output/extraction: provenance costs tokens, say so
+t06	positive	structured-output	a	1	enum_for_bounded_fields	True	True	structured-output: enum is the one value constraint genuinely enforced
+t06	positive	structured-output	a	1	reasoning_before_label	False	False	structured-output: put reasoning before the label
+t06	positive	structured-output	a	1	handles_refusal_or_truncation	True	True	structured-output: check before parsing
+t06	positive	structured-output	a	1	no_framework	True	True	structured-output: no output-parser abstractions
+t06	positive	structured-output	a	0	enum_for_bounded_fields	True	True	structured-output: enum is the one value constraint genuinely enforced
+t06	positive	structured-output	a	0	reasoning_before_label	False	False	structured-output: put reasoning before the label
+t06	positive	structured-output	a	0	handles_refusal_or_truncation	False	False	structured-output: check before parsing
+t06	positive	structured-output	a	0	no_framework	True	True	structured-output: no output-parser abstractions
+t08	control	structured-output	a	1	no_forced_schema_on_prose	True	True	structured-output: the output genuinely is prose — don't force a schema
+t08	control	structured-output	a	0	no_forced_schema_on_prose	True	True	structured-output: the output genuinely is prose — don't force a schema
+t08	control	structured-output	a	2	no_forced_schema_on_prose	True	True	structured-output: the output genuinely is prose — don't force a schema
+t06	positive	structured-output	a	2	enum_for_bounded_fields	True	True	structured-output: enum is the one value constraint genuinely enforced
+t06	positive	structured-output	a	2	reasoning_before_label	False	False	structured-output: put reasoning before the label
+t06	positive	structured-output	a	2	handles_refusal_or_truncation	False	False	structured-output: check before parsing
+t06	positive	structured-output	a	2	no_framework	True	True	structured-output: no output-parser abstractions
+t09	trap	tool-design	a	2	typed_fields_not_grammar	True	True	tool-design: never make the agent write a query language
+t09	trap	tool-design	a	2	enum_for_bounded_fields	False	False	tool-design: invalid states stop being representable
+t09	trap	tool-design	a	2	query_built_in_code	True	True	tool-design: your code owns the grammar
+t09	trap	tool-design	a	2	uses_native_tool_calling	False	False	tool-design: a tool schema is validated at generation time
+t09	trap	tool-design	a	1	typed_fields_not_grammar	False	False	tool-design: never make the agent write a query language
+t09	trap	tool-design	a	1	enum_for_bounded_fields	False	False	tool-design: invalid states stop being representable
+t09	trap	tool-design	a	1	query_built_in_code	True	True	tool-design: your code owns the grammar
+t09	trap	tool-design	a	1	uses_native_tool_calling	False	False	tool-design: a tool schema is validated at generation time
+t09	trap	tool-design	a	0	typed_fields_not_grammar	False	False	tool-design: never make the agent write a query language
+t09	trap	tool-design	a	0	enum_for_bounded_fields	False	False	tool-design: invalid states stop being representable
+t09	trap	tool-design	a	0	query_built_in_code	True	True	tool-design: your code owns the grammar
+t09	trap	tool-design	a	0	uses_native_tool_calling	False	False	tool-design: a tool schema is validated at generation time
+t10	positive	tool-design	a	0	consolidates_tools	False	False	tool-design: build tools for tasks, not for API endpoints
+t10	positive	tool-design	a	0	uses_native_tool_calling	False	False	tool-design: tool definitions in the payload
+t11	positive	tool-design	a	1	measures_before_decomposing	False	False	tool-design: Do not apply this by default — measure first
+t11	positive	tool-design	a	1	notes_cost_or_tradeoff	False	False	tool-design: decomposition buys clarity at the cost of tool count
+t10	positive	tool-design	a	2	consolidates_tools	False	False	tool-design: build tools for tasks, not for API endpoints
+t10	positive	tool-design	a	2	uses_native_tool_calling	False	False	tool-design: tool definitions in the payload
+t10	positive	tool-design	a	1	consolidates_tools	False	False	tool-design: build tools for tasks, not for API endpoints
+t10	positive	tool-design	a	1	uses_native_tool_calling	False	False	tool-design: tool definitions in the payload
+t11	positive	tool-design	a	0	measures_before_decomposing	False	False	tool-design: Do not apply this by default — measure first
+t11	positive	tool-design	a	0	notes_cost_or_tradeoff	False	False	tool-design: decomposition buys clarity at the cost of tool count
+t11	positive	tool-design	a	2	measures_before_decomposing	False	False	tool-design: Do not apply this by default — measure first
+t11	positive	tool-design	a	2	notes_cost_or_tradeoff	False	False	tool-design: decomposition buys clarity at the cost of tool count
+t12	control	tool-design	a	0	minimal_for_trivial_tool	True	True	tool-design: Skip when fewer than 10 tools; these are remedies not defaults
+t12	control	tool-design	a	0	uses_native_tool_calling	False	False	tool-design: still a real tool definition
+t12	control	tool-design	a	1	minimal_for_trivial_tool	True	True	tool-design: Skip when fewer than 10 tools; these are remedies not defaults
+t12	control	tool-design	a	1	uses_native_tool_calling	False	False	tool-design: still a real tool definition
+t12	control	tool-design	a	2	minimal_for_trivial_tool	True	True	tool-design: Skip when fewer than 10 tools; these are remedies not defaults
+t12	control	tool-design	a	2	uses_native_tool_calling	True	True	tool-design: still a real tool definition
+t13	trap	agent-vs-workflow-decision	a	1	recommends_workflow_not_agent	True	True	agent-vs-workflow: can you write down the steps? then it's a workflow
+t13	trap	agent-vs-workflow-decision	a	1	model_driven_loop	False	True	agent-vs-workflow: agent loops over fixed procedures (INVERTED — should be False)
+t13	trap	agent-vs-workflow-decision	a	0	recommends_workflow_not_agent	False	False	agent-vs-workflow: can you write down the steps? then it's a workflow
+t13	trap	agent-vs-workflow-decision	a	0	model_driven_loop	False	True	agent-vs-workflow: agent loops over fixed procedures (INVERTED — should be False)
+t14	trap	agent-vs-workflow-decision	a	0	recommends_workflow_not_agent	False	False	agent-vs-workflow: if the steps are known, your code should contain them
+t14	trap	agent-vs-workflow-decision	a	0	model_driven_loop	True	False	agent-vs-workflow: INVERTED — should be False
+t13	trap	agent-vs-workflow-decision	a	2	recommends_workflow_not_agent	True	True	agent-vs-workflow: can you write down the steps? then it's a workflow
+t13	trap	agent-vs-workflow-decision	a	2	model_driven_loop	False	True	agent-vs-workflow: agent loops over fixed procedures (INVERTED — should be False)
+t14	trap	agent-vs-workflow-decision	a	1	recommends_workflow_not_agent	True	True	agent-vs-workflow: if the steps are known, your code should contain them
+t14	trap	agent-vs-workflow-decision	a	1	model_driven_loop	True	False	agent-vs-workflow: INVERTED — should be False
+t15	positive	agent-vs-workflow-decision	a	0	notes_cost_or_tradeoff	False	False	agent-vs-workflow: multi-agent runs ~15x a chat interaction
+t15	positive	agent-vs-workflow-decision	a	0	has_stopping_condition	False	False	agent-vs-workflow: include stopping conditions
+t15	positive	agent-vs-workflow-decision	a	1	notes_cost_or_tradeoff	False	False	agent-vs-workflow: multi-agent runs ~15x a chat interaction
+t15	positive	agent-vs-workflow-decision	a	1	has_stopping_condition	False	False	agent-vs-workflow: include stopping conditions
+t15	positive	agent-vs-workflow-decision	a	2	notes_cost_or_tradeoff	False	False	agent-vs-workflow: multi-agent runs ~15x a chat interaction
+t15	positive	agent-vs-workflow-decision	a	2	has_stopping_condition	False	False	agent-vs-workflow: include stopping conditions
+t16	positive	agent-vs-workflow-decision	a	1	model_driven_loop	False	False	agent-vs-workflow: steps genuinely unknowable — an agent is right
+t16	positive	agent-vs-workflow-decision	a	1	has_stopping_condition	True	True	agent-vs-workflow: no stopping condition is a pitfall
+t16	positive	agent-vs-workflow-decision	a	1	notes_cost_or_tradeoff	False	False	agent-vs-workflow: can you afford it
+t16	positive	agent-vs-workflow-decision	a	0	model_driven_loop	False	False	agent-vs-workflow: steps genuinely unknowable — an agent is right
+t16	positive	agent-vs-workflow-decision	a	0	has_stopping_condition	True	True	agent-vs-workflow: no stopping condition is a pitfall
+t16	positive	agent-vs-workflow-decision	a	0	notes_cost_or_tradeoff	True	True	agent-vs-workflow: can you afford it
+t16	positive	agent-vs-workflow-decision	a	2	model_driven_loop	False	False	agent-vs-workflow: steps genuinely unknowable — an agent is right
+t16	positive	agent-vs-workflow-decision	a	2	has_stopping_condition	False	False	agent-vs-workflow: no stopping condition is a pitfall
+t16	positive	agent-vs-workflow-decision	a	2	notes_cost_or_tradeoff	True	True	agent-vs-workflow: can you afford it
+t14	trap	agent-vs-workflow-decision	a	2	recommends_workflow_not_agent	False	False	agent-vs-workflow: if the steps are known, your code should contain them
+t14	trap	agent-vs-workflow-decision	a	2	model_driven_loop	False	True	agent-vs-workflow: INVERTED — should be False
+t01	positive	llm-tool-calling	b	1	uses_native_tool_calling	True	True	llm-tool-calling: pass tool definitions in the API request payload
+t01	positive	llm-tool-calling	b	1	strict_mode_on	True	True	llm-tool-calling: Set strict: true explicitly
+t01	positive	llm-tool-calling	b	1	additional_properties_false	True	True	llm-tool-calling: Every object needs additionalProperties: false
+t01	positive	llm-tool-calling	b	1	no_framework	True	True	llm-tool-calling: Don't do this — framework agent abstractions
+t01	positive	llm-tool-calling	b	1	tool_result_role	True	True	llm-tool-calling: result goes in a message with role tool
+t01	positive	llm-tool-calling	b	1	tool_errors_as_data	True	True	llm-tool-calling: return errors as data — the model can recover
+t01	positive	llm-tool-calling	b	1	sql_is_safe	True	True	tool-design: a model emitting executable query text is an injection surface
+t01	positive	llm-tool-calling	b	0	uses_native_tool_calling	True	True	llm-tool-calling: pass tool definitions in the API request payload
+t01	positive	llm-tool-calling	b	0	strict_mode_on	True	True	llm-tool-calling: Set strict: true explicitly
+t01	positive	llm-tool-calling	b	0	additional_properties_false	True	True	llm-tool-calling: Every object needs additionalProperties: false
+t01	positive	llm-tool-calling	b	0	no_framework	True	True	llm-tool-calling: Don't do this — framework agent abstractions
+t01	positive	llm-tool-calling	b	0	tool_result_role	True	True	llm-tool-calling: result goes in a message with role tool
+t01	positive	llm-tool-calling	b	0	tool_errors_as_data	True	True	llm-tool-calling: return errors as data — the model can recover
+t01	positive	llm-tool-calling	b	0	sql_is_safe	True	True	tool-design: a model emitting executable query text is an injection surface
+t02	positive	llm-tool-calling	b	0	uses_native_tool_calling	True	True	llm-tool-calling: native tool calling
+t02	positive	llm-tool-calling	b	0	strict_mode_on	True	True	llm-tool-calling: Set strict: true explicitly
+t02	positive	llm-tool-calling	b	0	tool_result_role	True	True	llm-tool-calling: role tool, tool_call_id matching
+t02	positive	llm-tool-calling	b	0	tool_errors_as_data	True	True	llm-tool-calling: Letting tool execution errors raise
+t02	positive	llm-tool-calling	b	0	has_stopping_condition	True	True	llm-tool-calling/agent-loop: an iteration cap is the minimum
+t02	positive	llm-tool-calling	b	0	no_framework	True	True	llm-tool-calling: write the call directly
+t02	positive	llm-tool-calling	b	1	uses_native_tool_calling	True	True	llm-tool-calling: native tool calling
+t02	positive	llm-tool-calling	b	1	strict_mode_on	True	True	llm-tool-calling: Set strict: true explicitly
+t02	positive	llm-tool-calling	b	1	tool_result_role	True	True	llm-tool-calling: role tool, tool_call_id matching
+t02	positive	llm-tool-calling	b	1	tool_errors_as_data	True	True	llm-tool-calling: Letting tool execution errors raise
+t02	positive	llm-tool-calling	b	1	has_stopping_condition	True	True	llm-tool-calling/agent-loop: an iteration cap is the minimum
+t02	positive	llm-tool-calling	b	1	no_framework	True	True	llm-tool-calling: write the call directly
+t02	positive	llm-tool-calling	b	2	uses_native_tool_calling	True	True	llm-tool-calling: native tool calling
+t02	positive	llm-tool-calling	b	2	strict_mode_on	True	True	llm-tool-calling: Set strict: true explicitly
+t02	positive	llm-tool-calling	b	2	tool_result_role	True	True	llm-tool-calling: role tool, tool_call_id matching
+t02	positive	llm-tool-calling	b	2	tool_errors_as_data	True	True	llm-tool-calling: Letting tool execution errors raise
+t02	positive	llm-tool-calling	b	2	has_stopping_condition	False	False	llm-tool-calling/agent-loop: an iteration cap is the minimum
+t02	positive	llm-tool-calling	b	2	no_framework	True	True	llm-tool-calling: write the call directly
+t01	positive	llm-tool-calling	b	2	uses_native_tool_calling	True	True	llm-tool-calling: pass tool definitions in the API request payload
+t01	positive	llm-tool-calling	b	2	strict_mode_on	True	True	llm-tool-calling: Set strict: true explicitly
+t01	positive	llm-tool-calling	b	2	additional_properties_false	True	True	llm-tool-calling: Every object needs additionalProperties: false
+t01	positive	llm-tool-calling	b	2	no_framework	True	True	llm-tool-calling: Don't do this — framework agent abstractions
+t01	positive	llm-tool-calling	b	2	tool_result_role	True	True	llm-tool-calling: result goes in a message with role tool
+t01	positive	llm-tool-calling	b	2	tool_errors_as_data	True	True	llm-tool-calling: return errors as data — the model can recover
+t01	positive	llm-tool-calling	b	2	sql_is_safe	True	True	tool-design: a model emitting executable query text is an injection surface
+t03	positive	llm-tool-calling	b	0	uses_native_tool_calling	True	True	llm-tool-calling: native tool calling
+t03	positive	llm-tool-calling	b	0	strict_mode_on	True	True	llm-tool-calling: Set strict: true explicitly
+t03	positive	llm-tool-calling	b	0	additional_properties_false	True	True	llm-tool-calling: strict-mode requirements
+t03	positive	llm-tool-calling	b	0	no_framework	True	True	llm-tool-calling: reach for native before framework
+t03	positive	llm-tool-calling	b	0	tool_result_role	True	True	llm-tool-calling: send tool results back
+t03	positive	llm-tool-calling	b	1	uses_native_tool_calling	True	True	llm-tool-calling: native tool calling
+t03	positive	llm-tool-calling	b	1	strict_mode_on	True	True	llm-tool-calling: Set strict: true explicitly
+t03	positive	llm-tool-calling	b	1	additional_properties_false	True	True	llm-tool-calling: strict-mode requirements
+t03	positive	llm-tool-calling	b	1	no_framework	True	True	llm-tool-calling: reach for native before framework
+t03	positive	llm-tool-calling	b	1	tool_result_role	True	True	llm-tool-calling: send tool results back
+t03	positive	llm-tool-calling	b	2	uses_native_tool_calling	True	True	llm-tool-calling: native tool calling
+t03	positive	llm-tool-calling	b	2	strict_mode_on	True	True	llm-tool-calling: Set strict: true explicitly
+t03	positive	llm-tool-calling	b	2	additional_properties_false	True	True	llm-tool-calling: strict-mode requirements
+t03	positive	llm-tool-calling	b	2	no_framework	True	True	llm-tool-calling: reach for native before framework
+t03	positive	llm-tool-calling	b	2	tool_result_role	True	True	llm-tool-calling: send tool results back
+t04	control	llm-tool-calling	b	1	keeps_framework	True	True	llm-tool-calling: a framework already load-bearing — don't remove it
+t04	control	llm-tool-calling	b	1	strict_mode_on	True	True	llm-tool-calling: strict applies regardless of harness
+t04	control	llm-tool-calling	b	0	keeps_framework	True	True	llm-tool-calling: a framework already load-bearing — don't remove it
+t04	control	llm-tool-calling	b	0	strict_mode_on	True	True	llm-tool-calling: strict applies regardless of harness
+t04	control	llm-tool-calling	b	2	keeps_framework	True	True	llm-tool-calling: a framework already load-bearing — don't remove it
+t04	control	llm-tool-calling	b	2	strict_mode_on	True	True	llm-tool-calling: strict applies regardless of harness
+t05	positive	structured-output	b	0	nullable_optional_fields	True	True	structured-output: a field is nullable if a real document might not contain it
+t05	positive	structured-output	b	0	handles_refusal_or_truncation	True	True	structured-output: the two failure modes you must handle
+t05	positive	structured-output	b	0	additional_properties_false	True	True	structured-output: additionalProperties false on every object
+t05	positive	structured-output	b	0	no_framework	True	True	structured-output: don't use Instructor / output parsers
+t05	positive	structured-output	b	1	nullable_optional_fields	True	True	structured-output: a field is nullable if a real document might not contain it
+t05	positive	structured-output	b	1	handles_refusal_or_truncation	True	True	structured-output: the two failure modes you must handle
+t05	positive	structured-output	b	1	additional_properties_false	True	True	structured-output: additionalProperties false on every object
+t05	positive	structured-output	b	1	no_framework	True	True	structured-output: don't use Instructor / output parsers
+t05	positive	structured-output	b	2	nullable_optional_fields	True	True	structured-output: a field is nullable if a real document might not contain it
+t05	positive	structured-output	b	2	handles_refusal_or_truncation	True	True	structured-output: the two failure modes you must handle
+t05	positive	structured-output	b	2	additional_properties_false	True	True	structured-output: additionalProperties false on every object
+t05	positive	structured-output	b	2	no_framework	True	True	structured-output: don't use Instructor / output parsers
+t06	positive	structured-output	b	1	enum_for_bounded_fields	True	True	structured-output: enum is the one value constraint genuinely enforced
+t06	positive	structured-output	b	1	reasoning_before_label	False	False	structured-output: put reasoning before the label
+t06	positive	structured-output	b	1	handles_refusal_or_truncation	True	True	structured-output: check before parsing
+t06	positive	structured-output	b	1	no_framework	True	True	structured-output: no output-parser abstractions
+t06	positive	structured-output	b	0	enum_for_bounded_fields	True	True	structured-output: enum is the one value constraint genuinely enforced
+t06	positive	structured-output	b	0	reasoning_before_label	True	True	structured-output: put reasoning before the label
+t06	positive	structured-output	b	0	handles_refusal_or_truncation	True	True	structured-output: check before parsing
+t06	positive	structured-output	b	0	no_framework	True	True	structured-output: no output-parser abstractions
+t07	positive	structured-output	b	0	nullable_optional_fields	False	False	structured-output: no 'not found' path forces invention
+t07	positive	structured-output	b	0	handles_refusal_or_truncation	False	False	structured-output: refusal and truncation
+t07	positive	structured-output	b	0	notes_cost_or_tradeoff	False	False	structured-output/extraction: provenance costs tokens, say so
+t07	positive	structured-output	b	1	nullable_optional_fields	False	False	structured-output: no 'not found' path forces invention
+t07	positive	structured-output	b	1	handles_refusal_or_truncation	False	False	structured-output: refusal and truncation
+t07	positive	structured-output	b	1	notes_cost_or_tradeoff	False	False	structured-output/extraction: provenance costs tokens, say so
+t06	positive	structured-output	b	2	enum_for_bounded_fields	True	True	structured-output: enum is the one value constraint genuinely enforced
+t06	positive	structured-output	b	2	reasoning_before_label	False	False	structured-output: put reasoning before the label
+t06	positive	structured-output	b	2	handles_refusal_or_truncation	True	True	structured-output: check before parsing
+t06	positive	structured-output	b	2	no_framework	True	True	structured-output: no output-parser abstractions
+t07	positive	structured-output	b	2	nullable_optional_fields	False	False	structured-output: no 'not found' path forces invention
+t07	positive	structured-output	b	2	handles_refusal_or_truncation	False	False	structured-output: refusal and truncation
+t07	positive	structured-output	b	2	notes_cost_or_tradeoff	False	False	structured-output/extraction: provenance costs tokens, say so
+t08	control	structured-output	b	0	no_forced_schema_on_prose	True	True	structured-output: the output genuinely is prose — don't force a schema
+t08	control	structured-output	b	1	no_forced_schema_on_prose	True	True	structured-output: the output genuinely is prose — don't force a schema
+t08	control	structured-output	b	2	no_forced_schema_on_prose	True	True	structured-output: the output genuinely is prose — don't force a schema
+t09	trap	tool-design	b	1	typed_fields_not_grammar	True	True	tool-design: never make the agent write a query language
+t09	trap	tool-design	b	1	enum_for_bounded_fields	True	True	tool-design: invalid states stop being representable
+t09	trap	tool-design	b	1	query_built_in_code	True	True	tool-design: your code owns the grammar
+t09	trap	tool-design	b	1	uses_native_tool_calling	True	True	tool-design: a tool schema is validated at generation time
+t09	trap	tool-design	b	2	typed_fields_not_grammar	False	False	tool-design: never make the agent write a query language
+t09	trap	tool-design	b	2	enum_for_bounded_fields	True	True	tool-design: invalid states stop being representable
+t09	trap	tool-design	b	2	query_built_in_code	True	True	tool-design: your code owns the grammar
+t09	trap	tool-design	b	2	uses_native_tool_calling	True	True	tool-design: a tool schema is validated at generation time
+t09	trap	tool-design	b	0	typed_fields_not_grammar	True	True	tool-design: never make the agent write a query language
+t09	trap	tool-design	b	0	enum_for_bounded_fields	False	False	tool-design: invalid states stop being representable
+t09	trap	tool-design	b	0	query_built_in_code	True	True	tool-design: your code owns the grammar
+t09	trap	tool-design	b	0	uses_native_tool_calling	False	False	tool-design: a tool schema is validated at generation time
+t10	positive	tool-design	b	0	consolidates_tools	True	True	tool-design: build tools for tasks, not for API endpoints
+t10	positive	tool-design	b	0	uses_native_tool_calling	True	True	tool-design: tool definitions in the payload
+t10	positive	tool-design	b	1	consolidates_tools	True	True	tool-design: build tools for tasks, not for API endpoints
+t10	positive	tool-design	b	1	uses_native_tool_calling	True	True	tool-design: tool definitions in the payload
+t11	positive	tool-design	b	0	measures_before_decomposing	False	False	tool-design: Do not apply this by default — measure first
+t11	positive	tool-design	b	0	notes_cost_or_tradeoff	False	False	tool-design: decomposition buys clarity at the cost of tool count
+t11	positive	tool-design	b	1	measures_before_decomposing	False	False	tool-design: Do not apply this by default — measure first
+t11	positive	tool-design	b	1	notes_cost_or_tradeoff	False	False	tool-design: decomposition buys clarity at the cost of tool count
+t11	positive	tool-design	b	2	measures_before_decomposing	False	False	tool-design: Do not apply this by default — measure first
+t11	positive	tool-design	b	2	notes_cost_or_tradeoff	False	False	tool-design: decomposition buys clarity at the cost of tool count
+t12	control	tool-design	b	0	minimal_for_trivial_tool	True	True	tool-design: Skip when fewer than 10 tools; these are remedies not defaults
+t12	control	tool-design	b	0	uses_native_tool_calling	True	True	tool-design: still a real tool definition
+t12	control	tool-design	b	1	minimal_for_trivial_tool	True	True	tool-design: Skip when fewer than 10 tools; these are remedies not defaults
+t12	control	tool-design	b	1	uses_native_tool_calling	True	True	tool-design: still a real tool definition
+t10	positive	tool-design	b	2	consolidates_tools	True	True	tool-design: build tools for tasks, not for API endpoints
+t10	positive	tool-design	b	2	uses_native_tool_calling	True	True	tool-design: tool definitions in the payload
+t12	control	tool-design	b	2	minimal_for_trivial_tool	False	False	tool-design: Skip when fewer than 10 tools; these are remedies not defaults
+t12	control	tool-design	b	2	uses_native_tool_calling	True	True	tool-design: still a real tool definition
+t13	trap	agent-vs-workflow-decision	b	1	recommends_workflow_not_agent	True	True	agent-vs-workflow: can you write down the steps? then it's a workflow
+t13	trap	agent-vs-workflow-decision	b	1	model_driven_loop	False	True	agent-vs-workflow: agent loops over fixed procedures (INVERTED — should be False)
+t13	trap	agent-vs-workflow-decision	b	0	recommends_workflow_not_agent	True	True	agent-vs-workflow: can you write down the steps? then it's a workflow
+t13	trap	agent-vs-workflow-decision	b	0	model_driven_loop	False	True	agent-vs-workflow: agent loops over fixed procedures (INVERTED — should be False)
+t14	trap	agent-vs-workflow-decision	b	0	recommends_workflow_not_agent	True	True	agent-vs-workflow: if the steps are known, your code should contain them
+t14	trap	agent-vs-workflow-decision	b	0	model_driven_loop	False	True	agent-vs-workflow: INVERTED — should be False
+t13	trap	agent-vs-workflow-decision	b	2	recommends_workflow_not_agent	True	True	agent-vs-workflow: can you write down the steps? then it's a workflow
+t13	trap	agent-vs-workflow-decision	b	2	model_driven_loop	False	True	agent-vs-workflow: agent loops over fixed procedures (INVERTED — should be False)
+t14	trap	agent-vs-workflow-decision	b	1	recommends_workflow_not_agent	False	False	agent-vs-workflow: if the steps are known, your code should contain them
+t14	trap	agent-vs-workflow-decision	b	1	model_driven_loop	False	True	agent-vs-workflow: INVERTED — should be False
+t15	positive	agent-vs-workflow-decision	b	0	notes_cost_or_tradeoff	False	False	agent-vs-workflow: multi-agent runs ~15x a chat interaction
+t15	positive	agent-vs-workflow-decision	b	0	has_stopping_condition	False	False	agent-vs-workflow: include stopping conditions
+t15	positive	agent-vs-workflow-decision	b	1	notes_cost_or_tradeoff	False	False	agent-vs-workflow: multi-agent runs ~15x a chat interaction
+t15	positive	agent-vs-workflow-decision	b	1	has_stopping_condition	False	False	agent-vs-workflow: include stopping conditions
+t15	positive	agent-vs-workflow-decision	b	2	notes_cost_or_tradeoff	False	False	agent-vs-workflow: multi-agent runs ~15x a chat interaction
+t15	positive	agent-vs-workflow-decision	b	2	has_stopping_condition	False	False	agent-vs-workflow: include stopping conditions
+t14	trap	agent-vs-workflow-decision	b	2	recommends_workflow_not_agent	True	True	agent-vs-workflow: if the steps are known, your code should contain them
+t14	trap	agent-vs-workflow-decision	b	2	model_driven_loop	False	True	agent-vs-workflow: INVERTED — should be False
+t16	positive	agent-vs-workflow-decision	b	0	model_driven_loop	True	True	agent-vs-workflow: steps genuinely unknowable — an agent is right
+t16	positive	agent-vs-workflow-decision	b	0	has_stopping_condition	True	True	agent-vs-workflow: no stopping condition is a pitfall
+t16	positive	agent-vs-workflow-decision	b	0	notes_cost_or_tradeoff	True	True	agent-vs-workflow: can you afford it
+t16	positive	agent-vs-workflow-decision	b	1	model_driven_loop	False	False	agent-vs-workflow: steps genuinely unknowable — an agent is right
+t16	positive	agent-vs-workflow-decision	b	1	has_stopping_condition	True	True	agent-vs-workflow: no stopping condition is a pitfall
+t16	positive	agent-vs-workflow-decision	b	1	notes_cost_or_tradeoff	True	True	agent-vs-workflow: can you afford it
+t16	positive	agent-vs-workflow-decision	b	2	model_driven_loop	True	True	agent-vs-workflow: steps genuinely unknowable — an agent is right
+t16	positive	agent-vs-workflow-decision	b	2	has_stopping_condition	True	True	agent-vs-workflow: no stopping condition is a pitfall
+t16	positive	agent-vs-workflow-decision	b	2	notes_cost_or_tradeoff	True	True	agent-vs-workflow: can you afford it
