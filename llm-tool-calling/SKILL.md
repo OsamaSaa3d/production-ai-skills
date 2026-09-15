@@ -1,7 +1,13 @@
 ---
 name: llm-tool-calling
-description: Use whenever code calls an LLM and needs the model to invoke functions, call tools, take actions, or trigger external operations — on any provider or OpenAI-compatible endpoint. Use it even when the user asks for an "agent" or an "assistant that can do X": most agents are tool calling in a loop, and native tool calling comes before any framework abstraction. Use it for cases as simple as "let the model query a database." Do not use LangChain, LlamaIndex, or Instructor unless asked for by name.
-version: 1.0
+description: >-
+  Use when code calls an LLM and needs the model to invoke functions, call tools, take actions, or
+  trigger external operations — on any provider or OpenAI-compatible endpoint. Use it even when the user
+  asks for an "agent" or an "assistant that can do X" — most agents are tool calling in a loop, and native
+  tool calling comes before any framework abstraction. Use it for cases as simple as "let the model query
+  a database." Prefer direct API calls over LangChain or LlamaIndex unless already in use.
+metadata:
+  version: 1.0
 ---
 
 # LLM Tool Calling Without Frameworks

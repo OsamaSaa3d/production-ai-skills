@@ -1,7 +1,8 @@
 ---
 name: context-and-memory
 description: Use when a conversation or agent loop outgrows its context window, or when an agent must remember something across a context reset or between sessions. Use it when an agent forgets earlier decisions, redoes work it already did, wraps up early because it thinks it is out of tokens, re-asks what the user answered, or should be learning a user's conventions over time. Covers compaction, tool-result clearing, fresh-window handoff, fact stores, self-updating rules files, and the four memory types.
-version: 1.0
+metadata:
+  version: 1.0
 ---
 
 # Context and Memory

@@ -1,7 +1,14 @@
 ---
 name: agent-vs-workflow-decision
-description: Use before writing code when the user asks for an "agent," "AI assistant," "copilot," "autonomous system," "multi-agent system," or any multi-step LLM system. Use it when a process should be automated with an LLM, when extending existing agent-loop code, or when someone proposes a second agent, a supervisor, or a "crew." Decides the architecture — single call, workflow, or agent — before implementation. Apply it even when the user already said "agent": the request usually describes a workflow.
-version: 1.0
+description: >-
+  Use before writing code when the user asks for an "agent," "AI assistant," "copilot," "autonomous
+  system," "multi-agent system," or any multi-step LLM system. Use it when a process should be automated
+  with an LLM, when extending existing agent-loop code, or when someone proposes a second agent, a
+  supervisor, or a "crew." Decides the architecture — single call, workflow, or agent — before
+  implementation. Apply it even when the user already said "agent" — the request usually describes a
+  workflow.
+metadata:
+  version: 1.0
 ---
 
 # Choosing Between a Single Call, a Workflow, and an Agent

@@ -7,6 +7,12 @@ tells the agent to verify it against the live reference.
 
 Usage:  python3 scripts/lint_skills.py [--quiet]
 Exit code 1 if any error is found. Warnings never fail the build.
+
+Requires PyYAML (`pip install pyyaml`) so frontmatter is checked with a real
+YAML parser rather than a hand-rolled one — a hand-rolled line parser can pass
+frontmatter a real parser rejects, for example a description containing
+`"...": ` (a quoted phrase followed by `: `), which YAML reads as the start of
+a nested mapping.
 """
 
 from __future__ import annotations
@@ -15,6 +21,8 @@ import ast
 import re
 import sys
 from pathlib import Path
+
+import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -100,7 +108,7 @@ def warn(cls: str, path: Path, msg: str) -> None:
     warnings.append((cls, f"{path.relative_to(ROOT)}: {msg}"))
 
 
-def parse_frontmatter(path: Path, text: str) -> dict[str, str] | None:
+def parse_frontmatter(path: Path, text: str) -> dict[str, object] | None:
     if not text.startswith("---\n"):
         err(FRONTMATTER, path, "missing YAML frontmatter (file must start with '---')")
         return None
@@ -108,16 +116,15 @@ def parse_frontmatter(path: Path, text: str) -> dict[str, str] | None:
     if end == -1:
         err(FRONTMATTER, path, "frontmatter is not closed with '---'")
         return None
-    fields: dict[str, str] = {}
-    key = None
-    for line in text[4:end].split("\n"):
-        m = re.match(r"^([a-zA-Z][\w-]*):\s*(.*)$", line)
-        if m:
-            key = m.group(1)
-            fields[key] = m.group(2).strip()
-        elif key and line.startswith((" ", "\t")):
-            fields[key] += " " + line.strip()
-    return fields
+    try:
+        data = yaml.safe_load(text[4:end])
+    except yaml.YAMLError as e:
+        err(FRONTMATTER, path, f"invalid YAML: {e}")
+        return None
+    if not isinstance(data, dict):
+        err(FRONTMATTER, path, f"frontmatter did not parse to a mapping (got {type(data).__name__})")
+        return None
+    return data
 
 
 def check_frontmatter(skill_dir: Path, skill_md: Path, text: str) -> None:
@@ -126,11 +133,11 @@ def check_frontmatter(skill_dir: Path, skill_md: Path, text: str) -> None:
         return
 
     for required in ("name", "description"):
-        if required not in fields or not fields[required]:
+        if not isinstance(fields.get(required), str) or not fields[required]:
             err(FRONTMATTER, skill_md, f"frontmatter is missing a non-empty '{required}'")
 
     name = fields.get("name", "")
-    if name:
+    if isinstance(name, str) and name:
         if name != skill_dir.name:
             err(NAMING, skill_md, f"frontmatter name {name!r} != directory {skill_dir.name!r}")
         if not NAME_RE.match(name):
@@ -139,12 +146,16 @@ def check_frontmatter(skill_dir: Path, skill_md: Path, text: str) -> None:
             err(NAMING, skill_md, f"name is {len(name)} chars (max {NAME_MAX})")
 
     desc = fields.get("description", "")
-    if desc and len(desc) > DESCRIPTION_MAX:
+    if isinstance(desc, str) and len(desc) > DESCRIPTION_MAX:
         err(FRONTMATTER, skill_md, f"description is {len(desc)} chars (max {DESCRIPTION_MAX})")
 
-    unexpected = set(fields) - {"name", "description", "license", "allowed-tools", "version"}
+    unexpected = set(fields) - {"name", "description", "license", "allowed-tools", "metadata"}
     if unexpected:
         warn(FRONTMATTER, skill_md, f"unrecognized frontmatter keys: {sorted(unexpected)}")
+
+    metadata = fields.get("metadata")
+    if metadata is not None and not isinstance(metadata, dict):
+        err(FRONTMATTER, skill_md, f"'metadata' must be a mapping, got {type(metadata).__name__}")
 
 
 def check_links(md: Path, skill_dir: Path, skill_names: set[str]) -> None:

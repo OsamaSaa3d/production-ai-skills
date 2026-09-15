@@ -1,7 +1,8 @@
 ---
 name: evals-before-shipping
-description: Use when writing tests for an LLM app, agent, or RAG pipeline — or before changing a prompt, swapping a model, adding or renaming a tool, or modifying retrieval, when you need to know whether it helped. Use it when someone says an LLM system "feels worse" or "seems better," or asks whether a change was an improvement. Covers tool-call correctness, retrieval and grounding, and task completion. Build the suite with DeepEval and run it in CI; do not hand-roll scoring it already has a metric for.
-version: 1.0
+description: Use when writing tests for an LLM app, agent, or RAG pipeline — or before changing a prompt, swapping a model, adding or renaming a tool, or modifying retrieval, when you need to know whether it helped. Use it when someone says an LLM system "feels worse" or "seems better," or asks whether a change was an improvement. Covers tool-call correctness, retrieval and grounding, and task completion. Defaults to DeepEval, run in CI; swap in another eval library already in use.
+metadata:
+  version: 1.0
 ---
 
 # Eval Suites for LLM Apps
@@ -12,7 +13,9 @@ version: 1.0
 
 ## Core principle
 
-An LLM app without an eval suite has no tests. Build the suite with `deepeval`, run it under pytest, gate CI on it.
+An LLM app without an eval suite has no tests. Default to `deepeval` for the suite, run it under pytest, gate CI on it — it already has calibrated, tested implementations of the metrics below (tool correctness, faithfulness, task completion), and hand-rolling them means re-solving judge prompting and score calibration that this library has already done. If your project already standardizes on a different eval library (Promptfoo, Braintrust, OpenAI Evals), use that instead; the metrics below are the target, not the package.
+
+This is a different call than `llm-tool-calling`'s stance against orchestration frameworks. That skill argues against wrapping a provider's native tool-calling API, which is not hard and does not need an abstraction layer. An eval library is not that: judge-model calibration, metric definitions, and CI wiring are genuinely reusable work, closer to a testing framework than an orchestration one. Hand-roll a metric DeepEval does not have; do not hand-roll one it does.
 
 Two rules that govern everything below:
 
