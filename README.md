@@ -253,6 +253,19 @@ The honest caveats:
 - Only 4 of the 10 skills were exercised. The durable wins are architectural, from `tool-design` and `agent-vs-workflow-decision`.
 - Two tasks measured nothing, and three grader bugs were fixed after generation, on both arms.
 
+### Future work: the six untested skills
+
+Run 1 has tasks for only four skills: `llm-tool-calling`, `structured-output`, `tool-design` and `agent-vs-workflow-decision`. The other six were installed in arm B but nothing measured them, so **there is no evidence yet, for or against,** for `context-and-memory`, `evals-before-shipping`, `model-selection`, `rag-pipeline-standard`, `subagents-and-multi-agent` or `system-prompt-engineering`.
+
+Adding them is planned. They will get their own pre-registered tasks, rubrics and fixtures, committed before any generation. They are likely to be harder to test than the first four. The current harness grades with deterministic checks, which work well for code with a clear signature, such as a strict tool schema or a stopping condition. They work much less well for these:
+
+- whether a system prompt is well-written
+- whether a model was chosen sensibly
+- whether a RAG pipeline retrieves the right context
+- whether context is managed well across a long session
+
+Some of these will need the calibrated judge described in the methodology, or tasks built around a measurable outcome rather than the shape of the code. Where a skill can only be checked weakly, the results will say so rather than hiding it behind a number.
+
 **[Full results → RESULTS.md](RESULTS.md)** · [write-up and per-task tables](examples/RESULTS.md) · [methodology](examples/README.md)
 
 ## Two conventions, enforced in CI
